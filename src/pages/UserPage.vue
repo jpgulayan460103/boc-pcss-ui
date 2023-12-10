@@ -357,10 +357,6 @@ onMounted(async () => {
           </div>
 
         </form>
-        
-        <div class="modal-action">
-          <label for="scheduleCloseModal">Close</label>
-        </div>
       </div>
     </div>
     
