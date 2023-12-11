@@ -183,15 +183,14 @@ onMounted(async () => {
             </div>
 
             <div class="col-span-12">
-              <FormInput label="Position" :errors="formErrors?.position">
+              <FormInput label="Position/Designation" :errors="formErrors?.position">
                 <input type="text" :readonly="userStore.formType == 'schedule'" v-model="userPayload.position" placeholder="" class="input input-bordered w-full" />
               </FormInput>
             </div>
 
             <div class="col-span-12">
-              <FormInput label="Image" :errors="formErrors?.image_path">
-                <!-- <input type="text" :readonly="userStore.formType == 'schedule'" v-model="userPayload.image_path" placeholder="" class="input input-bordered w-full" /> -->
-                <input type="file" :readonly="userStore.formType == 'schedule'" class="file-input w-full max-w-xs" @change="handleFileChange" />
+              <FormInput label="Assigned Office" :errors="formErrors?.office_id">
+                <ComboBox v-model="schedulePayload.office_id" :options="options" />
               </FormInput>
             </div>
 
@@ -232,7 +231,7 @@ onMounted(async () => {
               <tr>
                 <th>Username</th>
                 <th>Full Name</th>
-                <th>Position</th>
+                <th>Position/Designation</th>
                 <th class="text-center">Actions</th>
               </tr>
             </thead>

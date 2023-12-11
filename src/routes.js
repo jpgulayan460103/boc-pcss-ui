@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import UserPage from '@/pages/UserPage.vue'
 import HomePage from '@/pages/HomePage.vue'
 import LoginPage from '@/pages/LoginPage.vue'
+import SchedulePage from '@/pages/SchedulePage.vue'
 import { vueApp } from '@/app.js'
 import { useAuthStore } from '@/stores/auth.js'
 
@@ -24,6 +25,16 @@ const routes = [
     component: UserPage,
     meta: {
       label: 'Users',
+      hasNavBar: true,
+      auth: true,
+    },
+  },
+  {
+    path: '/schedules',
+    name: 'schedules',
+    component: SchedulePage,
+    meta: {
+      label: 'Schedules',
       hasNavBar: true,
       auth: true,
     },
