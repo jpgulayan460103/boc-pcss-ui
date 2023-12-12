@@ -205,7 +205,7 @@ onMounted(async () => {
               </span>
             </button>
 
-            <button class="btn btn-accent" v-if="userStore.formType == 'update'" @click="userStore.unSelect()">
+            <button class="btn btn-secondary" v-if="userStore.formType == 'update'" @click="userStore.unSelect()">
               Cancel
             </button>
           </div>
@@ -318,7 +318,7 @@ onMounted(async () => {
         <form @submit.prevent="submitScheduleForm">
           <div class="grid grid-cols-12">
             <div class="col-span-12 mt-4 text-center">
-              <VDatePicker v-model.range="schedulePayload.working_dates" @update:modelValue="handleUpdateRange" mode="date" :is-dark="themeStore.isDark()" :color="themeStore.isDark() ? 'sky-blue' : 'green'"/>
+              <VDatePicker v-model.range="schedulePayload.working_dates" @update:modelValue="handleUpdateRange" mode="date" :is-dark="themeStore.calendar.isDark" :color="themeStore.calendar.color"/>
             </div>
             <div class="col-span-12">
               <FormInput label="Working Dates" :errors="formErrors?.working_dates">
@@ -328,9 +328,9 @@ onMounted(async () => {
             <div class="col-span-12">
               <FormInput label="Working Hours" :errors="formErrors?.working_time_in">
                 <div class="input input-bordered w-full space-x-2">
-                  <VDatePicker class="mt-1.5" expanded v-model.string="schedulePayload.working_time_in" mode="time" :masks="masks" :is-dark="themeStore.isDark()" :color="themeStore.isDark() ? 'sky-blue' : 'green'" hide-time-header />
+                  <VDatePicker class="mt-1.5" expanded v-model.string="schedulePayload.working_time_in" mode="time" :masks="masks" :is-dark="themeStore.calendar.isDark" :color="themeStore.calendar.color" hide-time-header />
                   <span>to</span>
-                  <VDatePicker class="mt-1.5" expanded v-model.string="schedulePayload.working_time_out" mode="time" :masks="masks" :is-dark="themeStore.isDark()" :color="themeStore.isDark() ? 'sky-blue' : 'green'" hide-time-header />
+                  <VDatePicker class="mt-1.5" expanded v-model.string="schedulePayload.working_time_out" mode="time" :masks="masks" :is-dark="themeStore.calendar.isDark" :color="themeStore.calendar.color" hide-time-header />
                 </div>
               </FormInput>
             </div>
@@ -350,7 +350,7 @@ onMounted(async () => {
               </span>
             </button>
 
-            <button class="btn btn-accent" v-if="userStore.formType == 'update'" @click="userStore.unSelect()">
+            <button class="btn btn-secondary" v-if="userStore.formType == 'update'" @click="userStore.unSelect()">
               Cancel
             </button>
           </div>

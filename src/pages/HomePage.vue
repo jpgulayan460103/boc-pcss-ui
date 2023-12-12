@@ -110,7 +110,7 @@ const getFontColor = (color = 'red') => {
     <div class="col-span-12 md:col-span-6">
       <Card title="Employee Work Schedule Calendar">
         <div class="overflow-auto w-full pt-4">
-          <VCalendar expanded :columns="columns" :rows="3" :attributes="attrs" :is-dark="themeStore.isDark()" :color="themeStore.isDark() ? 'sky-blue' : 'green'">
+          <VCalendar expanded :columns="columns" :rows="3" :attributes="attrs" :is-dark="themeStore.calendar.isDark" :color="themeStore.calendar.color">
             <template #day-popover="{ attributes }">
               <div class="text-xs bg-base-100 content-base space-y-2 p-2">
                 <div class="flex justify-between space-x-1.5 mb-2" v-for="attribute in attributes">

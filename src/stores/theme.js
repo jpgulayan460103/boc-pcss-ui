@@ -4,10 +4,25 @@ import { computed, ref } from 'vue'
 
 
 export const useThemeStore = defineStore('theme', () => {
-  const theme = ref("emerald");
+  const theme = ref('emerald');
+  const calendar = ref({
+    color: 'sky-blue',
+    isDark: true,
+  });
 
   const changeTheme = (selectedTheme) => {
     localStorage.setItem('theme', selectedTheme);
+    if(selectedTheme == "emerald"){
+      calendar.value = {
+        color: 'green',
+        isDark: false,
+      }
+    }else{
+      calendar.value = {
+        color: 'sky-blue',
+        isDark: true,
+      }
+    }
     theme.value = selectedTheme;
   }
 
@@ -17,14 +32,11 @@ export const useThemeStore = defineStore('theme', () => {
     }
   }
 
-  const isDark = () => {
-    return theme.value == "night"
-  }
 
   return {
     changeTheme,
     getTheme,
-    isDark,
     theme,
+    calendar,
   }
 })
