@@ -39,10 +39,12 @@ const formErrors = ref({});
 const { payload } = storeToRefs(scheduleStore);
 
 const handleUpdateRange = (value) => {
-  let {start, end} = value;
-  payload.value.working_daterange = {
-    start: dayjs(start).format('YYYY-MM-DD'),
-    end: dayjs(end).format('YYYY-MM-DD'),
+  if(value){
+    let {start, end} = value;
+    payload.value.working_daterange = {
+      start: dayjs(start).format('YYYY-MM-DD'),
+      end: dayjs(end).format('YYYY-MM-DD'),
+    }
   }
 }
 
@@ -73,7 +75,7 @@ const generateDateArray = (start, end) => {
 }
 
 const workingDates = computed(() => {
-  if(payload.value.working_daterange.start && payload.value.working_daterange.end){
+  if(payload.value.working_daterange?.start && payload.value.working_daterange?.end){
     return generateDateArray(dayjs(payload.value.working_daterange.start).format('YYYY-MM-DD'), dayjs(payload.value.working_daterange.end).format('YYYY-MM-DD'))
   }
   return []
@@ -85,14 +87,30 @@ const masks = ref({
   modelValue: 'HH:mm:ss',
 });
 
+const attr = ref([{
+  dates: { repeat: { weekdays: 1 } },
+  content: 'red',
+  popover: false,
+}])
+
 const handleAddShift = () => {
-  payload.value.shifts = [
-    ...payload.value.shifts,
-    {
-      working_time_in: "00:00:00",
-      working_time_out: "00:00:00",
-    }
-  ];
+  if(payload.value.shifts.length == 0){
+    payload.value.shifts = [
+      ...payload.value.shifts,
+      {
+        working_time_in: "08:00:00",
+        working_time_out: "17:00:00",
+      }
+    ];
+  }else{
+    payload.value.shifts = [
+      ...payload.value.shifts,
+      {
+        working_time_in: "00:00:00",
+        working_time_out: "00:00:00",
+      }
+    ];
+  }
 }
 
 const handleRemoveShift = (index) => {
@@ -119,7 +137,7 @@ const isEmployeeAdded = (employee) => {
 }
 
 const submitScheduleForm = async () => {
-  // submit.value = true;
+  submit.value = true;
   formErrors.value = {};
   let formattedPayload = {
     ...payload.value,
@@ -127,8 +145,22 @@ const submitScheduleForm = async () => {
     working_start_date: payload.value.working_daterange.start,
     working_end_date: payload.value.working_daterange.end,
   }
-  await scheduleStore.save(formattedPayload);
-  // submit.value = false;
+  scheduleStore.save(formattedPayload)
+  .then(res => {
+    alert("You have successfully generated a schedule");
+    submit.value = false;
+    payload.value = {
+      working_daterange: {
+        start: null,
+        end: null,
+      },
+      shifts: [],
+      employees: []
+    }
+  })
+  .catch(err => {
+    submit.value = false;
+  });
 }
 
 const officeOptions = computed(() => officeStore.offices.map(i => {
@@ -162,7 +194,7 @@ onMounted(() => {
 
           <div v-if="tab == 'dates'" class="pt-6">
             <div class="overflow-auto w-full">
-              <VDatePicker expanded :columns="columns" :rows="2" v-model.range="payload.working_daterange" @update:modelValue="handleUpdateRange" mode="date" :is-dark="themeStore.calendar.isDark" :color="themeStore.calendar.color"/>
+              <VDatePicker expanded :columns="columns" :attributes="attr" :rows="2" v-model.range="payload.working_daterange" @update:modelValue="handleUpdateRange" mode="date" :is-dark="themeStore.calendar.isDark" :color="themeStore.calendar.color"/>
             </div>
 
             <div class="flex justify-between flex-row-reverse pt-6">

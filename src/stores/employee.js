@@ -33,6 +33,10 @@ export const useEmployeeStore = defineStore('employee', () => {
     formType.value = "create"
   }
 
+  const destroy = (payload) => {
+    return axios.delete(`${API}/api/employees/${payload.id}`);
+  }
+
   return {
     employees,
     selectedEmployee,
@@ -40,6 +44,7 @@ export const useEmployeeStore = defineStore('employee', () => {
     get,
     save,
     edit,
+    destroy,
     unSelect,
   }
 })

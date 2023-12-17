@@ -18,6 +18,14 @@ export const useUserStore = defineStore('user', () => {
     });
   }
 
+  const save = async (payload) => {
+    if(formType.value == 'create'){
+      return axios.post(`${API}/api/users`, payload)
+    }
+
+    return axios.put(`${API}/api/users/${payload.id}`, payload)
+  }
+
   const edit = (data) => {
     selectedUser.value = data;
     formType.value = "update"
@@ -34,12 +42,18 @@ export const useUserStore = defineStore('user', () => {
     formType.value = "create"
   }
 
+  const destroy = (payload) => {
+    return axios.delete(`${API}/api/users/${payload.id}`);
+  }
+
   return {
     users,
     selectedUser,
     formType,
     get,
+    save,
     edit,
+    destroy,
     viewSchedule,
     unSelect,
   }

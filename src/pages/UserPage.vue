@@ -13,7 +13,7 @@ import DeleteIcon from '@/icons/DeleteIcon.vue'
 import CalendarIcon from '@/icons/CalendarIcon.vue'
 import SearchIcon from '@/icons/SearchIcon.vue'
 import PlusIcon from '@/icons/PlusIcon.vue'
-import { cloneDeep } from 'lodash';
+import { cloneDeep, isEmpty } from 'lodash';
 import { useThemeStore } from '@/stores/theme.js'
 import dayjs from 'dayjs';
 
@@ -30,16 +30,6 @@ const options = computed(() => officeStore.offices.map(i => {
   }
 }))
 
-const schedulePayload = ref({
-  working_dates: {
-    start: null,
-    end: null,
-  },
-  working_time_in: "00:00:00",
-  working_time_out: "00:00:00",
-  office_id: null,
-  user_id: null,
-});
 
 const searchQuery = ref("");
 
@@ -47,9 +37,10 @@ const masks = ref({
   modelValue: 'HH:mm:ss',
 });
 
-const userPayload = ref({
+const payload = ref({
   email: "",
-  password: ""
+  password: "",
+  role: "",
 });
 const formErrors = ref({});
 // const scheduleModal = ref(null);
@@ -58,61 +49,39 @@ const submit = ref(false);
 const submitUserForm = () => {
   submit.value = true;
   formErrors.value = {}
-}
-
-const submitScheduleForm = async () => {
-  submit.value = true;
-  formErrors.value = {}
-  scheduleStore.save(schedulePayload.value)
-  .then((res) => {
-    alert("You have successfully added schedules");
+  userStore.save(payload.value)
+  .then(res => {
+    if(userStore.formType == 'create'){
+      alert("You have successfully added a user");
+    }else{
+      alert("You have successfully updated a user");
+    }
     submit.value = false;
-    scheduleStore.get();
-    scheduleModal.click();
+    userStore.get();
+    userStore.unSelect();
+    formErrors.value = {};
+    payload.value = {
+      email: "",
+      password: "",
+      role: "",
+    };
   })
   .catch(err => {
+    submit.value = false;
+    formErrors.value = err.response.data.errors;
     console.warn(err);
   })
 }
 
-const handleUpdateRange = (value) => {
-  let {start, end} = value;
-  schedulePayload.value = {
-    ...schedulePayload.value,
-    working_dates: {
-      start: dayjs(start).format('YYYY-MM-DD'),
-      end: dayjs(end).format('YYYY-MM-DD'),
-    }
-  }
-
-  console.log(schedulePayload.value);
-}
 
 watch(
   () => userStore.selectedUser,
   (value) => {
-    userPayload.value = cloneDeep(value);
+    if(!isEmpty(value)){
+      payload.value = cloneDeep(value);
+    }
   }
 )
-
-const handleAddSchedule = () => {
-  scheduleModal.click();
-  schedulePayload.value = {
-    ...schedulePayload.value,
-    user_id: userStore.selectedUser.id
-  }
-
-  // var element = document.getElementsByClassName("vc-time-select-group");
-
-  // for(var i = 0; i < element.length; i++){
-  //   element[i].classList.add('w-full');
-  //   console.log(element[i].className);
-  // }
-
-  // Array.from(document.querySelectorAll('.vc-container')).forEach(
-  //   (el) => el.classList.remove('vc-light')
-  // );
-}
 
 const previewImage = ref(null);
 
@@ -125,6 +94,15 @@ const handleFileChange = (event) => {
   }
 }
 
+
+const handleDeleteUser = (schedule) => {
+  if(confirm('Are you sure you want to delete this user')){
+    userStore.destroy(schedule)
+    .then(res => {
+      userStore.get();
+    })
+  }
+}
 
 
 onMounted(async () => {
@@ -147,51 +125,62 @@ onMounted(async () => {
               <!-- <img :src="profile" alt="" class="w-52 h-52 rounded-full mx-auto border-4 p-2"> -->
               <img :src="previewImage" alt="" class="w-52 h-52 rounded-full mx-auto border-4 p-2">
             </div>
+
+            <div class="col-span-12">
+              <FormInput label="Username" :errors="formErrors?.role">
+                <select class="select select-bordered w-full" v-model="payload.role">
+                  <option value="" disabled>Select User Role</option>
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </FormInput>
+            </div>
+
             <div class="col-span-12">
               <FormInput label="Username" :errors="formErrors?.email">
-                <input type="text" :readonly="userStore.formType == 'schedule'" v-model="userPayload.email" placeholder="" class="input input-bordered w-full" />
+                <input type="text" v-model="payload.email" placeholder="" class="input input-bordered w-full" />
               </FormInput>
             </div>
 
             <div class="col-span-12" v-if="userStore.formType == 'create'">
               <FormInput label="Password" :errors="formErrors?.password">
-                <input type="password" autocomplete="new-password" v-model="userPayload.password" placeholder="" class="input input-bordered w-full" />
+                <input type="password" autocomplete="new-password" v-model="payload.password" placeholder="" class="input input-bordered w-full" />
               </FormInput>
             </div>
             
             <div class="col-span-12" v-if="userStore.formType == 'create'">
               <FormInput label="Confirm Password" :errors="formErrors?.confirm_password">
-                <input type="password" autocomplete="new-password" v-model="userPayload.confirm_password" placeholder="" class="input input-bordered w-full" />
+                <input type="password" autocomplete="new-password" v-model="payload.confirm_password" placeholder="" class="input input-bordered w-full" />
               </FormInput>
             </div>
 
             <div class="col-span-12">
               <FormInput label="First Name" :errors="formErrors?.first_name">
-                <input type="text" :readonly="userStore.formType == 'schedule'" v-model="userPayload.first_name" placeholder="" class="input input-bordered w-full" />
+                <input type="text" v-model="payload.first_name" placeholder="" class="input input-bordered w-full" />
               </FormInput>
             </div>
 
             <div class="col-span-12">
               <FormInput label="Middle Name" :errors="formErrors?.middle_name">
-                <input type="text" :readonly="userStore.formType == 'schedule'" v-model="userPayload.middle_name" placeholder="" class="input input-bordered w-full" />
+                <input type="text" v-model="payload.middle_name" placeholder="" class="input input-bordered w-full" />
               </FormInput>
             </div>
 
             <div class="col-span-12">
               <FormInput label="Last Name" :errors="formErrors?.last_name">
-                <input type="text" :readonly="userStore.formType == 'schedule'" v-model="userPayload.last_name" placeholder="" class="input input-bordered w-full" />
+                <input type="text" v-model="payload.last_name" placeholder="" class="input input-bordered w-full" />
               </FormInput>
             </div>
 
             <div class="col-span-12">
               <FormInput label="Position/Designation" :errors="formErrors?.position">
-                <input type="text" :readonly="userStore.formType == 'schedule'" v-model="userPayload.position" placeholder="" class="input input-bordered w-full" />
+                <input type="text" v-model="payload.position" placeholder="" class="input input-bordered w-full" />
               </FormInput>
             </div>
 
             <div class="col-span-12">
               <FormInput label="Assigned Office" :errors="formErrors?.office_id">
-                <ComboBox v-model="schedulePayload.office_id" :options="options" />
+                <ComboBox v-model="payload.office_id" :options="options" />
               </FormInput>
             </div>
 
@@ -230,30 +219,29 @@ onMounted(async () => {
           <table class="table table-zebra table-sm">
             <thead>
               <tr>
+                <th>Role</th>
                 <th>Username</th>
                 <th>Full Name</th>
+                <th>Assigned Office</th>
                 <th>Position/Designation</th>
                 <th class="text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="user in userStore.users">
+                <td>{{ user.role == 'user' ? 'User' : 'Admin'  }}</td>
                 <td>{{ user.email }}</td>
                 <td>{{ user.full_name }}</td>
+                <td>{{ user.office?.name }}</td>
                 <td>{{ user.position }}</td>
                 <td class="text-center">
                   <div class="join">
-                    <div class="tooltip tooltip-left" data-tip="View Schedules">
-                      <button class="btn btn-ghost btn-sm btn-square" @click="userStore.viewSchedule(user)">
-                        <CalendarIcon class="w-5 h-5" />
-                      </button>
-                    </div>
                     <div class="tooltip tooltip-left" data-tip="Edit User">
                       <button class="btn btn-ghost btn-sm btn-square" @click="userStore.edit(user)">
                         <EditIcon class="w-5 h-5" />
                       </button>
                     </div>
-                    <div class="tooltip tooltip-left" data-tip="Delete User">
+                    <div class="tooltip tooltip-left" data-tip="Delete User" @click="handleDeleteUser(user)">
                       <button class="btn btn-ghost btn-sm btn-square">
                         <DeleteIcon class="w-5 h-5" />
                       </button>
@@ -316,59 +304,7 @@ onMounted(async () => {
       </Card>
     </div>
 
-    <!-- The button to open modal -->
-    <label for="scheduleModal" @ref="scheduleModal"></label>
 
-    <!-- Put this part before </body> tag -->
-    <input type="checkbox" id="scheduleModal" class="modal-toggle" />
-    <div class="modal" role="dialog">
-      <div class="modal-box">
-        <h3 class="font-bold text-lg">Add Schedule</h3>
-        
-        <form @submit.prevent="submitScheduleForm">
-          <div class="grid grid-cols-12">
-            <div class="col-span-12 mt-4 text-center">
-              <VDatePicker v-model.range="schedulePayload.working_dates" @update:modelValue="handleUpdateRange" mode="date" :is-dark="themeStore.calendar.isDark" :color="themeStore.calendar.color"/>
-            </div>
-            <div class="col-span-12">
-              <FormInput label="Working Dates" :errors="formErrors?.working_dates">
-                <input type="text" readonly :value="`${schedulePayload.working_dates?.start} to ${schedulePayload.working_dates?.end}`" placeholder="" class="input input-bordered w-full" />
-              </FormInput>
-            </div>
-            <div class="col-span-12">
-              <FormInput label="Working Hours" :errors="formErrors?.working_time_in">
-                <div class="input input-bordered w-full space-x-2">
-                  <VDatePicker class="mt-1.5" expanded v-model.string="schedulePayload.working_time_in" mode="time" :masks="masks" :is-dark="themeStore.calendar.isDark" :color="themeStore.calendar.color" hide-time-header />
-                  <span>to</span>
-                  <VDatePicker class="mt-1.5" expanded v-model.string="schedulePayload.working_time_out" mode="time" :masks="masks" :is-dark="themeStore.calendar.isDark" :color="themeStore.calendar.color" hide-time-header />
-                </div>
-              </FormInput>
-            </div>
-
-            <div class="col-span-12">
-              <FormInput label="Assigned Office" :errors="formErrors?.working_dates">
-                <ComboBox v-model="schedulePayload.office_id" :options="options" />
-              </FormInput>
-            </div>
-          </div>
-          <div class="flex justify-between flex-row-reverse pt-6">
-
-            <button class="btn btn-primary" :disabled="submit">
-              <span v-if="submit" class="loading loading-spinner"></span>
-              <span>
-                Add Schedule
-              </span>
-            </button>
-
-            <button class="btn btn-secondary" v-if="userStore.formType == 'update'" @click="userStore.unSelect()">
-              Cancel
-            </button>
-          </div>
-
-        </form>
-      </div>
-    </div>
-    
   </div>
 </template>
 

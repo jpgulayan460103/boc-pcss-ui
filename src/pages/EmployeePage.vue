@@ -10,7 +10,7 @@ import DeleteIcon from '@/icons/DeleteIcon.vue'
 import CalendarIcon from '@/icons/CalendarIcon.vue'
 import SearchIcon from '@/icons/SearchIcon.vue'
 import PlusIcon from '@/icons/PlusIcon.vue'
-import { cloneDeep } from 'lodash';
+import { cloneDeep, isEmpty } from 'lodash';
 import { useThemeStore } from '@/stores/theme.js'
 import dayjs from 'dayjs';
 
@@ -20,10 +20,7 @@ const employeeStore = useEmployeeStore();
 
 const searchQuery = ref("");
 
-const payload = ref({
-  email: "",
-  password: ""
-});
+const payload = ref({});
 
 const formErrors = ref({});
 
@@ -34,9 +31,16 @@ const submitEmployeeForm = () => {
   formErrors.value = {}
   employeeStore.save(payload.value)
   .then((res) => {
-    alert("You have successfully added employee");
+    if (employeeStore.formType == 'create') {
+      alert("You have successfully added an employee");
+    }else{
+      alert("You have successfully updated an employee");
+    }
     submit.value = false;
     employeeStore.get();
+    employeeStore.unSelect();
+    formErrors.value = {}
+    payload.value = {};
   })
   .catch(err => {
     submit.value = false;
@@ -46,11 +50,22 @@ const submitEmployeeForm = () => {
 }
 
 
+const handleDeleteEmployee = (schedule) => {
+  if(confirm('Are you sure you want to delete this user')){
+    employeeStore.destroy(schedule)
+    .then(res => {
+      employeeStore.get();
+    })
+  }
+}
+
 
 watch(
   () => employeeStore.selectedEmployee,
   (value) => {
-    payload.value = cloneDeep(value);
+    if(!isEmpty(value)){
+      payload.value = cloneDeep(value);
+    }
   }
 )
 
@@ -171,7 +186,7 @@ onMounted(async () => {
                       </button>
                     </div>
                     <div class="tooltip tooltip-left" data-tip="Delete Employee">
-                      <button class="btn btn-ghost btn-sm btn-square">
+                      <button class="btn btn-ghost btn-sm btn-square" @click="handleDeleteEmployee(row)">
                         <DeleteIcon class="w-5 h-5" />
                       </button>
                     </div>

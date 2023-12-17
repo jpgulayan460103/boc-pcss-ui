@@ -10,6 +10,7 @@ import { cloneDeep, forEach, groupBy, map, random, uniqBy } from 'lodash';
 import profile from '@/assets/profile.png'
 import SearchIcon from '@/icons/SearchIcon.vue';
 import ChevronIcon from '@/icons/ChevronIcon.vue';
+import DeleteIcon from '@/icons/DeleteIcon.vue';
 
 const themeStore = useThemeStore()
 const scheduleStore = useScheduleStore();
@@ -20,6 +21,15 @@ const masks = ref({
 });
 const attrs = ref([]);
 const currentPage = ref(1);
+
+const handleDeleteSchedule = (schedule) => {
+  if(confirm('Are you sure you want to delete schedule')){
+    scheduleStore.destroy(schedule)
+    .then(res => {
+      scheduleStore.get();
+    })
+  }
+}
 
 const { mapCurrent } = useScreens({ xs: '0px', sm: '640px', md: '768px', lg: '1024px' });
 const columns = mapCurrent({ lg: 2 }, 1);
@@ -55,9 +65,9 @@ const filteredSchedules = computed(() => {
     filtered.push(  {
       keys: index,
       highlight: {
-        start: { fillMode: 'outline', color },
+        start: { fillMode: 'light', color },
         base: { fillMode: 'light', color },
-        end: { fillMode: 'outline', color },
+        end: { fillMode: 'light', color },
       },
       dates: { start: new Date(value.working_start_date), end: new Date(value.working_end_date) },
       schedule: value,
@@ -142,12 +152,13 @@ const getFontColor = (color = 'red') => {
     <div class="col-span-12 md:col-span-6">
       <Card title="List of Work Schedules">
         <div class="overflow-x-auto">
-          <table class="table">
+          <table class="table table-zebra table-sm">
             <thead>
               <tr>
                 <th>Office</th>
                 <th>Schedule Date</th>
                 <th>Shifts</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -160,8 +171,24 @@ const getFontColor = (color = 'red') => {
                     <br>
                   </span>
                 </td>
+                <td>
+                  <div class="join">
+                    <div class="tooltip tooltip-left" data-tip="Delete Schedule">
+                      <button class="btn btn-ghost btn-sm btn-square" @click="handleDeleteSchedule(row)">
+                        <DeleteIcon class="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                </td>
               </tr>
             </tbody>
+            <tfoot v-if="scheduleStore.schedules.length == 0">
+              <tr>
+                <th colspan="20" class="text-center">
+                  <p class="text-lg">No Data</p>
+                </th>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </Card>

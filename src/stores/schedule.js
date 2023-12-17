@@ -46,6 +46,10 @@ export const useScheduleStore = defineStore('schedule', () => {
     selectedSchedule.value = {};
     formType.value = "create"
   }
+  
+  const destroy = (payload) => {
+    return axios.delete(`${API}/api/schedules/${payload.id}`);
+  }
 
   return {
     payload,
@@ -56,6 +60,7 @@ export const useScheduleStore = defineStore('schedule', () => {
     get,
     edit,
     view,
+    destroy,
     unSelect,
   }
 })
