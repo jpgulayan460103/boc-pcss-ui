@@ -29,6 +29,7 @@ export const useThemeStore = defineStore('theme', () => {
   const getTheme = () => {
     if(localStorage.getItem('theme')){
       theme.value = localStorage.getItem('theme');
+      changeTheme(theme.value);
     }
   }
 

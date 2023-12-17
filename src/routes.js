@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import UserPage from '@/pages/UserPage.vue'
 import HomePage from '@/pages/HomePage.vue'
 import LoginPage from '@/pages/LoginPage.vue'
+import EmployeePage from '@/pages/EmployeePage.vue'
 import SchedulePage from '@/pages/SchedulePage.vue'
 import { vueApp } from '@/app.js'
 import { useAuthStore } from '@/stores/auth.js'
@@ -47,6 +48,16 @@ const routes = [
       label: 'Login',
       hasNavBar: false,
       auth: false,
+    },
+  },
+  {
+    path: '/employees',
+    name: 'employees',
+    component: EmployeePage,
+    meta: {
+      label: 'Employees',
+      hasNavBar: true,
+      auth: true,
     },
   },
 //   {

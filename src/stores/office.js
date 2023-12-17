@@ -7,13 +7,13 @@ const API = import.meta.env.VITE_API_URL;
 export const useOfficeStore = defineStore('office', () => {
   const offices = ref([]);
 
-  const getOffices = async () => {
+  const get = async () => {
     return axios.get(`${API}/api/offices`).then(res => {
       offices.value = res.data.offices;
     });
   }
   return {
     offices,
-    getOffices,
+    get,
   }
 })

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -8,6 +8,15 @@ export const useScheduleStore = defineStore('schedule', () => {
   const schedules = ref([]);
   const selectedSchedule = ref({});
   const formType = ref("create");
+
+  const payload = ref({
+    working_daterange: {
+      start: null,
+      end: null,
+    },
+    shifts: [],
+    employees: []
+  });
 
   const get = async () => {
     return axios.get(`${API}/api/schedules`).then(res => {
@@ -39,6 +48,7 @@ export const useScheduleStore = defineStore('schedule', () => {
   }
 
   return {
+    payload,
     schedules,
     selectedSchedule,
     formType,

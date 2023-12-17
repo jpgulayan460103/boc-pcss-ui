@@ -42,7 +42,7 @@ const handleAuthorizeUser = () => {
           class="pr-6"
         >
           <div class="space-x-2 flex">
-            <span>{{ authStore.authUser.email }}</span>
+            <span class="hidden md:inline">{{ authStore.authUser.email }}</span>
             <SettingIcon class="w-6 h-6" />
           </div>
         </MenuButton>
@@ -85,20 +85,6 @@ const handleAuthorizeUser = () => {
                 <div class="space-x-2 flex">
                   <DarkThemeIcon class="w-5 h-5" />
                   <span>Dark Theme</span>
-                </div>
-              </button>
-            </MenuItem>
-            <MenuItem v-slot="{ active }">
-              <button
-                :class="[
-                  active ? 'bg-base-300 text-base-content' : 'text-base-content',
-                  'group flex w-full items-center rounded-md px-2 py-2 text-sm',
-                ]"
-                 @click="router.push({name: 'users'})"
-              >
-                <div class="space-x-2 flex">
-                  <UsersIcon class="w-5 h-5" />
-                  <span>Users</span>
                 </div>
               </button>
             </MenuItem>

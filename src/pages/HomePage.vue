@@ -37,7 +37,6 @@ const filteredUserSchedules = computed(() => {
 }); 
 
 const colors = [
-  'gray',
   'red',
   'orange',
   'yellow',
@@ -51,20 +50,33 @@ const colors = [
 
 const filteredSchedules = computed(() => {
   let filtered = [];
-  forEach(filteredUserSchedules.value, function(value, index) {
+  forEach(scheduleStore.schedules, function(value, index) {
+    let color = colors[random(0, colors.length)];
     filtered.push(  {
       keys: index,
-      dot: {
-        color: colors[random(0, colors.length)],
-        fillMode: 'solid',
+      highlight: {
+        start: { fillMode: 'outline', color },
+        base: { fillMode: 'light', color },
+        end: { fillMode: 'outline', color },
       },
-      dates: value.map(i => new Date(i.working_date)),
-      schedule: value[0],
+      dates: { start: new Date(value.working_start_date), end: new Date(value.working_end_date) },
+      schedule: value,
+      color,
       popover: {
         visibility: 'hover',
       }
-    },);
+    });
   });
+  // filtered.push({
+  //   dates: { repeat: { weekdays: 7 } },
+  //   content: 'red',
+  //   popover: false,
+  // })
+  filtered.push({
+    dates: { repeat: { weekdays: 1 } },
+    content: 'red',
+    popover: false,
+  })
   return filtered;
 });
 
@@ -72,6 +84,9 @@ const formatTime = (time) => {
   return dayjs(`2001-01-01 ${time}`).format("hh:mm:ss A");
 }
 
+const formatDate = (date) => {
+  return dayjs(date).format("MMMM D, YYYY");
+}
 const pageSize = ref(12);
 
 const totalPages = computed(() => {
@@ -87,14 +102,6 @@ watch(
   filteredSchedules,
   (value) => {
     attrs.value = cloneDeep(value);
-    // const elements = document.getElementsByClassName('pagination');
-    // const boxes = document.querySelectorAll('ul.pagination');
-    Array.from(document.querySelectorAll('ul.pagination')).forEach(
-      (el) => el.classList.add('flex')
-    );
-    // Array.from(document.querySelectorAll('ul.pagination .page-item')).forEach(
-    //   (el) => el.classList.add('p-2')
-    // );
   }
 )
 
@@ -108,18 +115,22 @@ const getFontColor = (color = 'red') => {
 <template>
   <div class="container mx-auto grid grid-cols-12 gap-2">
     <div class="col-span-12 md:col-span-6">
-      <Card title="Employee Work Schedule Calendar">
+      <Card title="Work Schedule Calendar">
         <div class="overflow-auto w-full pt-4">
           <VCalendar expanded :columns="columns" :rows="3" :attributes="attrs" :is-dark="themeStore.calendar.isDark" :color="themeStore.calendar.color">
             <template #day-popover="{ attributes }">
               <div class="text-xs bg-base-100 content-base space-y-2 p-2">
                 <div class="flex justify-between space-x-1.5 mb-2" v-for="attribute in attributes">
-                  <!-- {{ console.log(attribute.schedule) }} -->
-                  <img :src="profile" alt="" class="w-12 h-12 rounded-full border-4 p-2">
                   <div class="grow">
-                    <span class="font-bold" :class="getFontColor(attribute.dot.base.color)">{{ attribute.schedule.user.full_name }}</span><br>
-                    {{ attribute.schedule.office.name }} ({{ formatTime(attribute.schedule.working_time_in) }} - {{ formatTime(attribute.schedule.working_time_out) }})  <br>
-                    {{ attribute.schedule.user.position }}
+                    <!-- <span class="font-bold">{{ formatDate(attribute.schedule.working_start_date) }} - {{ formatDate(attribute.schedule.working_end_date) }}</span> <br> -->
+                    <div class="vc-dots" style="justify-content: initial;">
+                      <span :class="`vc-dot vc-${attribute.color} vc-attr`" style="width: 8px; height: 8px;"></span>
+                      <span class="font-bold">{{ attribute.schedule.office.name }}</span>
+                    </div>
+                    <span v-for="shifts in attribute.schedule.shifts">
+                      {{ formatTime(shifts.working_time_in) }} - {{ formatTime(shifts.working_time_out) }}
+                      <br>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -129,58 +140,29 @@ const getFontColor = (color = 'red') => {
       </Card>
     </div>
     <div class="col-span-12 md:col-span-6">
-      <Card title="">
-        <div class="flex justify-between flex-row-reverse">
-          <div class="flex join py-4">
-            <input type="text" placeholder="Search for employee" @keyup="handleSearchRecord($event)" class="input input-bordered input-sm w-full max-w-xs join-item" />
-            <button class="btn btn-sm join-item">
-              <SearchIcon class="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
+      <Card title="List of Work Schedules">
         <div class="overflow-x-auto">
-          <!-- <table class="table"> -->
-
-            <VTable :data="scheduleStore.schedules" class="table" :pageSize="pageSize" :currentPage.sync="currentPage">
-              <template #head>
-                <tr>
-                  <th>Date</th>
-                  <th>Employee Name</th>
-                  <th>Schedule</th>
-                  <th>Office</th>
-                </tr>
-              </template>
-              <template #body="{rows}">
-                <tr v-for="row in rows" :key="row.id">
-                  <td>{{ row.working_date }}</td>
-                  <td>{{ row.user?.full_name }}</td>
-                  <td>{{ formatTime(row.working_time_in) }} <br> {{ formatTime(row.working_time_out) }}</td>
-                  <td>{{ row.office?.name }}</td>
-                </tr>
-              </template>
-            </VTable>
-            <VTPagination
-              v-model:currentPage="currentPage"
-              :total-pages="totalPages"
-              class="pt-2"
-            >
-            <template #firstPage>
-              <span>First</span>
-            </template>
-            
-            <template #lastPage>
-              <span>First</span>
-            </template>
-            
-            <template #next>
-              <ChevronIcon class="w-6 h-6 rotate-90" />
-            </template>
-            
-            <template #previous>
-              <ChevronIcon class="w-6 h-6 -rotate-90" />
-            </template>
-            </VTPagination>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Office</th>
+                <th>Schedule Date</th>
+                <th>Shifts</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in scheduleStore.schedules" :key="row.id">
+                <td>{{ row.office?.name }}</td>
+                <td>{{ formatDate(row.working_start_date) }} <br> {{ formatDate(row.working_end_date) }}</td>
+                <td>
+                  <span v-for="shifts in row.shifts">
+                    {{ formatTime(shifts.working_time_in) }} - {{ formatTime(shifts.working_time_out) }}
+                    <br>
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </Card>
     </div>

@@ -129,7 +129,8 @@ const handleFileChange = (event) => {
 
 onMounted(async () => {
   userStore.get();
-  officeStore.getOffices();
+  officeStore.get();
+  userStore.unSelect();
 })
 
 </script>
@@ -226,7 +227,7 @@ onMounted(async () => {
         </div>
 
         <div class="overflow-x-auto">
-          <table class="table">
+          <table class="table table-zebra table-sm">
             <thead>
               <tr>
                 <th>Username</th>
@@ -241,24 +242,33 @@ onMounted(async () => {
                 <td>{{ user.full_name }}</td>
                 <td>{{ user.position }}</td>
                 <td class="text-center">
-                  <div class="tooltip tooltip-left" data-tip="View Schedules">
-                    <button class="btn btn-ghost btn-sm btn-square" @click="userStore.viewSchedule(user)">
-                      <CalendarIcon class="w-5 h-5" />
-                    </button>
-                  </div>
-                  <div class="tooltip tooltip-left" data-tip="Edit User">
-                    <button class="btn btn-ghost btn-sm btn-square" @click="userStore.edit(user)">
-                      <EditIcon class="w-5 h-5" />
-                    </button>
-                  </div>
-                  <div class="tooltip tooltip-left" data-tip="Delete User">
-                    <button class="btn btn-ghost btn-sm btn-square">
-                      <DeleteIcon class="w-5 h-5" />
-                    </button>
+                  <div class="join">
+                    <div class="tooltip tooltip-left" data-tip="View Schedules">
+                      <button class="btn btn-ghost btn-sm btn-square" @click="userStore.viewSchedule(user)">
+                        <CalendarIcon class="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div class="tooltip tooltip-left" data-tip="Edit User">
+                      <button class="btn btn-ghost btn-sm btn-square" @click="userStore.edit(user)">
+                        <EditIcon class="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div class="tooltip tooltip-left" data-tip="Delete User">
+                      <button class="btn btn-ghost btn-sm btn-square">
+                        <DeleteIcon class="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
                 </td>
               </tr>
             </tbody>
+            <tfoot v-if="userStore.users.length == 0">
+              <tr>
+                <th colspan="20" class="text-center">
+                  <p class="text-lg">No Data</p>
+                </th>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </Card>

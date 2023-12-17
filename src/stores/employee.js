@@ -15,6 +15,14 @@ export const useEmployeeStore = defineStore('employee', () => {
     });
   }
 
+  const save = async (payload) => {
+    if(formType.value == 'create'){
+      return axios.post(`${API}/api/employees`, payload)
+    }
+
+    return axios.put(`${API}/api/employees/${payload.id}`, payload)
+  }
+
   const edit = (data) => {
     selectedEmployee.value = data;
     formType.value = "update"
@@ -30,6 +38,7 @@ export const useEmployeeStore = defineStore('employee', () => {
     selectedEmployee,
     formType,
     get,
+    save,
     edit,
     unSelect,
   }
