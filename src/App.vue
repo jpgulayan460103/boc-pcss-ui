@@ -40,7 +40,7 @@ onMounted(async () => {
 <template>
   <div :data-theme="themeStore.theme" style="min-height: 100vh;">
     <NavBar v-if="route.meta.hasNavBar" />
-    <MenuBar />
+    <MenuBar v-if="route.meta.hasNavBar" />
     
     <div class="flex bg-base-300 min-h-screen pt-4">
       <router-view v-slot="{ Component }">

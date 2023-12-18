@@ -113,6 +113,8 @@ const handleAddShift = () => {
   }
 }
 
+const showErrors = ref(false);
+
 const handleRemoveShift = (index) => {
   if (index > -1) { // only splice array when item is found
     payload.value.shifts.splice(index, 1); // 2nd parameter means remove one item only
@@ -138,6 +140,7 @@ const isEmployeeAdded = (employee) => {
 
 const submitScheduleForm = async () => {
   submit.value = true;
+  showErrors.value = false;
   formErrors.value = {};
   let formattedPayload = {
     ...payload.value,
@@ -160,6 +163,8 @@ const submitScheduleForm = async () => {
   })
   .catch(err => {
     submit.value = false;
+    formErrors.value = err.response.data.errors;
+    showErrors.value = true;
   });
 }
 
@@ -202,6 +207,20 @@ onMounted(() => {
                 Generate Schedules
               </button>
             </div>
+
+            <div class="pt-4" v-if="showErrors">
+              <div role="alert" class="alert">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                  <p class="font-bold">Generating schedule failed. Please review the form.</p>
+                  <p v-for="error in formErrors">{{ error[0] }}</p>
+                </div>
+                <div>
+                  <button type="button" class="btn btn-sm btn-ghost" @click="showErrors = false">Close</button>
+                </div>
+              </div>
+            </div>
+
           </div>
 
           <div v-if="tab == 'shifts'" class="pt-6 space-y-4">

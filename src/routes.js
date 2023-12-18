@@ -17,7 +17,7 @@ const routes = [
     meta: {
       label: 'Home',
       hasNavBar: true,
-      auth: false,
+      auth: true,
     },
   },
   {
