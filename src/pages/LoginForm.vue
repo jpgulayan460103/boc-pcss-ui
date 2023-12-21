@@ -22,15 +22,15 @@ const payload = reactive({
 const formErrors = ref({});
 const submit = ref(false);
 
-const submitForm = debounce(() => {
+const submitForm = debounce(async () => {
   submit.value = true;
   formErrors.value = {}
   authStore.login(payload)
   .then(async (res) => {
     submit.value = false;
     formErrors.value = {};
-    router.push({ name: 'home' });
     await authStore.getUser();
+    router.push({ name: 'home' });
   })
   .catch(err => {
     console.log(err);

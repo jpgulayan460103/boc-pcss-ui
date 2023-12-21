@@ -7,6 +7,8 @@ import profile from '@/assets/profile.png'
 import { useUserStore } from '@/stores/user'
 import { useOfficeStore } from '@/stores/office'
 import { useScheduleStore } from '@/stores/schedule'
+import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 
 import EditIcon from '@/icons/EditIcon.vue'
 import DeleteIcon from '@/icons/DeleteIcon.vue'
@@ -22,6 +24,8 @@ const themeStore = useThemeStore()
 const userStore = useUserStore();
 const officeStore = useOfficeStore();
 const scheduleStore = useScheduleStore();
+const authStore = useAuthStore();
+const router = useRouter()
 
 const options = computed(() => officeStore.offices.map(i => {
   return {
@@ -83,6 +87,15 @@ watch(
   }
 )
 
+watch(
+  () => authStore.authUser.role,
+  (value) => {
+    if(value !== 'admin'){
+      router.replace({name: 'home'});
+    }
+  }
+)
+
 const previewImage = ref(null);
 
 const handleFileChange = (event) => {
@@ -105,10 +118,11 @@ const handleDeleteUser = (schedule) => {
 }
 
 
+
 onMounted(async () => {
   userStore.get();
   officeStore.get();
-  userStore.unSelect();
+  userStore.unSelect()
 })
 
 </script>

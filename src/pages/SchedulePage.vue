@@ -10,6 +10,9 @@ import { useScheduleStore } from '@/stores/schedule'
 import { useEmployeeStore } from '@/stores/employee'
 import { useScreens } from 'vue-screen-utils';
 
+import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
+
 import EditIcon from '@/icons/EditIcon.vue'
 import DeleteIcon from '@/icons/DeleteIcon.vue'
 import CalendarIcon from '@/icons/CalendarIcon.vue'
@@ -32,6 +35,9 @@ const userStore = useUserStore();
 const officeStore = useOfficeStore();
 const scheduleStore = useScheduleStore();
 const employeeStore = useEmployeeStore();
+const authStore = useAuthStore();
+const router = useRouter()
+
 
 const tab = ref("employees");
 const formErrors = ref({});
@@ -138,6 +144,28 @@ const isEmployeeAdded = (employee) => {
   return payloadEmployees.length === 1;
 }
 
+const options = computed(() => officeStore.offices.map(i => {
+  return {
+    value: i.id,
+    label: i.name,
+  }
+}))
+
+const handleAddEmployeeUsingOffice = () => {
+  const payloadEmployees = payload.value.employees.filter(i => i.office_id !== selectedOffice.value);
+  const filteredEmployee = employeeStore.employees.filter(i => i.office_id == selectedOffice.value);
+
+  payload.value = {
+    ...payload.value,
+    employees: [
+      ...payloadEmployees,
+      ...filteredEmployee,
+    ]
+  }
+  // return payloadEmployees.length === 1;
+
+}
+
 const submitScheduleForm = async () => {
   submit.value = true;
   showErrors.value = false;
@@ -168,12 +196,23 @@ const submitScheduleForm = async () => {
   });
 }
 
+const selectedOffice = ref(null);
+
 const officeOptions = computed(() => officeStore.offices.map(i => {
   return {
     value: i.id,
     label: i.name,
   }
 }))
+
+watch(
+  () => authStore.authUser.role,
+  (value) => {
+    if(value !== 'admin'){
+      router.replace({name: 'home'});
+    }
+  }
+)
 
 
 onMounted(() => {
@@ -259,17 +298,30 @@ onMounted(() => {
           <div v-if="tab == 'employees'" class="pt-6 space-y-2">
 
             <div class="flex justify-between flex-row-reverse pb-4">
+
               <div class="flex join">
                 <input type="text" placeholder="Search for employee" class="input input-bordered input-sm w-full max-w-xs join-item" />
                 <button class="btn btn-sm join-item">
                   <SearchIcon class="w-4 h-4" />
                 </button>
               </div>
+
+              <div class="flex join">
+                <ComboBox v-model="selectedOffice" :options="options" size="sm" />
+                <div class="tooltip tooltip-bottom" data-tip="Add all employees in this office">
+                  <button class="btn btn-sm join-item" type="button" @click="handleAddEmployeeUsingOffice">
+                    <PlusIcon class="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
             </div>
+
             <div class="overflow-x-auto">
               <table class="table table-zebra table-sm">
                 <thead>
                   <tr>
+                    <th>Office</th>
                     <th>Fullname</th>
                     <th>Position</th>
                     <th>Employee Type</th>
@@ -278,6 +330,7 @@ onMounted(() => {
                 </thead>
                 <tbody>
                   <tr v-for="row in employeeStore.employees">
+                    <td>{{ row.office.name }}</td>
                     <td>{{ row.full_name }}</td>
                     <td>{{ row.position }}</td>
                     <td>{{ row.is_overtimer ? 'Overtimer' : 'Regular' }}</td>
@@ -361,6 +414,7 @@ onMounted(() => {
           <table class="table table-zebra table-sm">
             <thead>
               <tr>
+                <th>Office</th>
                 <th>Fullname</th>
                 <th>Position</th>
                 <th class="text-center">Actions</th>
@@ -368,6 +422,7 @@ onMounted(() => {
             </thead>
             <tbody>
               <tr v-for="row in payload.employees">
+                <td>{{ row.office.name }}</td>
                 <td>{{ row.full_name }}</td>
                 <td>{{ row.position }}</td>
                 <td class="text-center">

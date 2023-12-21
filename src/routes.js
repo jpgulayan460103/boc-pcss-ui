@@ -18,6 +18,7 @@ const routes = [
       label: 'Home',
       hasNavBar: true,
       auth: true,
+      isAdminPage: false,
     },
   },
   {
@@ -28,6 +29,7 @@ const routes = [
       label: 'Users',
       hasNavBar: true,
       auth: true,
+      isAdminPage: true,
     },
   },
   {
@@ -38,6 +40,7 @@ const routes = [
       label: 'Schedules',
       hasNavBar: true,
       auth: true,
+      isAdminPage: false,
     },
   },
   {
@@ -48,6 +51,7 @@ const routes = [
       label: 'Login',
       hasNavBar: false,
       auth: false,
+      isAdminPage: false,
     },
   },
   {
@@ -58,6 +62,7 @@ const routes = [
       label: 'Employees',
       hasNavBar: true,
       auth: true,
+      isAdminPage: false,
     },
   },
 //   {

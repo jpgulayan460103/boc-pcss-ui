@@ -32,7 +32,7 @@ const routeName = computed(() => route.name )
           <span v-if="showLabels">Home</span>
         </a>
       </li>
-      <li>
+      <li v-if="authStore.authUser.role == 'admin'">
         <a href="#" @click="router.push({name: 'users'})" :class="{ 'active': routeName == 'users' }">
           <UsersIcon class="w-5 h-5" />
           <span v-if="showLabels">Users</span>
@@ -44,7 +44,7 @@ const routeName = computed(() => route.name )
           <span v-if="showLabels">Employees</span>
         </a>
       </li>
-      <li>
+      <li v-if="authStore.authUser.role == 'admin'">
         <a href="#" @click="router.push({name: 'schedules'})" :class="{ 'active': routeName == 'schedules' }">
           <CalendarDaysIcon class="w-5 h-5" />
           <span v-if="showLabels">Schedules</span>

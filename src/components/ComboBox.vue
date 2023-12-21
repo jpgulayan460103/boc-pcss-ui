@@ -10,7 +10,8 @@
           class="relative w-full cursor-default overflow-hidden rounded-lg bg-white border-2 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm"
         >
           <ComboboxInput
-            class="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 bg-base-100 text-base focus:ring-0"
+            class="w-full border-none pl-3 pr-10 text-sm leading-5 bg-base-100 text-base focus:ring-0"
+            :class="{'py-2': size == 'md', 'py-1' : size == 'sm'}"
             :displayValue="() => displayValue"
             @change="query = $event.target.value"
             @blur="emits('blur', $event)"
@@ -119,6 +120,10 @@ const props = defineProps({
   options: {
     type: Array,
     required: true,
+  },
+  size: {
+    type: String,
+    default: 'md',
   },
 })
 </script>

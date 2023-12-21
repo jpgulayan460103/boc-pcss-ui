@@ -4,7 +4,7 @@ import ComboBox from '@/components/ComboBox.vue'
 import FormInput from '@/components/FormInput.vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useEmployeeStore } from '@/stores/employee'
-
+import { useOfficeStore } from '@/stores/office'
 import EditIcon from '@/icons/EditIcon.vue'
 import DeleteIcon from '@/icons/DeleteIcon.vue'
 import CalendarIcon from '@/icons/CalendarIcon.vue'
@@ -17,10 +17,18 @@ import dayjs from 'dayjs';
 
 const themeStore = useThemeStore()
 const employeeStore = useEmployeeStore();
+const officeStore = useOfficeStore();
 
 const searchQuery = ref("");
 
 const payload = ref({});
+
+const options = computed(() => officeStore.offices.map(i => {
+  return {
+    value: i.id,
+    label: i.name,
+  }
+}))
 
 const formErrors = ref({});
 
@@ -74,6 +82,7 @@ watch(
 onMounted(async () => {
   employeeStore.get();
   employeeStore.unSelect();
+  officeStore.get();
 })
 
 </script>
@@ -107,6 +116,12 @@ onMounted(async () => {
             <div class="col-span-12">
               <FormInput label="Position" :errors="formErrors?.position">
                 <input type="text" v-model="payload.position" placeholder="" class="input input-bordered w-full" />
+              </FormInput>
+            </div>
+
+            <div class="col-span-12">
+              <FormInput label="Assigned Office" :errors="formErrors?.office_id">
+                <ComboBox v-model="payload.office_id" :options="options" />
               </FormInput>
             </div>
 
@@ -165,6 +180,7 @@ onMounted(async () => {
                 <th>Full Name</th>
                 <th>Position/Designation</th>
                 <th>Employee Type</th>
+                <th>Office</th>
                 <th class="text-center">Actions</th>
               </tr>
             </thead>
@@ -173,6 +189,7 @@ onMounted(async () => {
                 <td>{{ row.full_name }}</td>
                 <td>{{ row.position }}</td>
                 <td>{{ row.is_overtimer ? 'Overtimer' : 'Regular' }}</td>
+                <td>{{ row.office.name }}</td>
                 <td class="text-center">
                   <div class="join">
                     <div class="tooltip tooltip-left" data-tip="View Schedules">
