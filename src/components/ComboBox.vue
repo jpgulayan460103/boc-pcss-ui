@@ -3,7 +3,7 @@
     <Combobox
       :model-value="props.modelValue"
       @update:model-value="(value) => emits('update:modelValue', value.value)"
-      class="z-30"
+      class="z-20"
       >
       <div class="relative mt-1">
         <div

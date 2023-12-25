@@ -320,7 +320,7 @@ watch(
                   </td>
                 </tr>
               </tbody>
-              <tfoot v-if="scheduleStore.schedules.length == 0">
+              <tfoot v-if="holidayStore.holidays.length == 0">
                 <tr>
                   <th colspan="20" class="text-center">
                     <p class="text-lg">No Data</p>

@@ -15,7 +15,7 @@ import DeleteIcon from '@/icons/DeleteIcon.vue'
 import CalendarIcon from '@/icons/CalendarIcon.vue'
 import SearchIcon from '@/icons/SearchIcon.vue'
 import PlusIcon from '@/icons/PlusIcon.vue'
-import { cloneDeep, isEmpty } from 'lodash';
+import { cloneDeep, debounce, isEmpty } from 'lodash';
 import { useThemeStore } from '@/stores/theme.js'
 import dayjs from 'dayjs';
 
@@ -110,6 +110,20 @@ const handleFileChange = (event) => {
   }
 }
 
+const handleResetForm = () => {
+  userStore.unSelect();
+  payload.value = {
+    email: "",
+    password: "",
+    role: "",
+  };
+}
+
+const handleSearchRecord = debounce(() => {
+  userStore.get({
+    q: searchQuery.value,
+  });
+}, 500)
 
 const handleDeleteUser = (schedule) => {
   if(confirm('Are you sure you want to delete this user')){
@@ -144,7 +158,7 @@ onMounted(async () => {
             </div>
 
             <div class="col-span-12">
-              <FormInput label="Username" :errors="formErrors?.role">
+              <FormInput label="Role" :errors="formErrors?.role">
                 <select class="select select-bordered w-full" v-model="payload.role">
                   <option value="" disabled>Select User Role</option>
                   <option value="user">User</option>
@@ -166,8 +180,8 @@ onMounted(async () => {
             </div>
             
             <div class="col-span-12" v-if="userStore.formType == 'create'">
-              <FormInput label="Confirm Password" :errors="formErrors?.confirm_password">
-                <input type="password" autocomplete="new-password" v-model="payload.confirm_password" placeholder="" class="input input-bordered w-full" />
+              <FormInput label="Confirm Password" :errors="formErrors?.password_confirmation">
+                <input type="password" autocomplete="new-password" v-model="payload.password_confirmation" placeholder="" class="input input-bordered w-full" />
               </FormInput>
             </div>
 
@@ -212,7 +226,7 @@ onMounted(async () => {
               </span>
             </button>
 
-            <button class="btn btn-default" v-if="userStore.formType == 'update'" @click="userStore.unSelect()">
+            <button class="btn btn-default" v-if="userStore.formType == 'update'" @click="handleResetForm">
               Cancel
             </button>
           </div>
@@ -225,8 +239,8 @@ onMounted(async () => {
 
         <div class="flex justify-between flex-row-reverse">
           <div class="flex join py-4">
-            <input type="text" placeholder="Search for employee" v-model="searchQuery" @keyup="handleSearchRecord($event)" class="input input-bordered input-sm w-full max-w-xs join-item" />
-            <button class="btn btn-sm join-item">
+            <input type="text" placeholder="Search for user" v-model="searchQuery" @keyup="handleSearchRecord($event)" class="input input-bordered input-sm w-full max-w-xs join-item" />
+            <button type="button" class="btn btn-sm join-item">
               <SearchIcon class="w-4 h-4" />
             </button>
           </div>

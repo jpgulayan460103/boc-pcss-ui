@@ -12,8 +12,10 @@ export const useUserStore = defineStore('user', () => {
   const selectedUser = ref({});
   const formType = ref("create");
 
-  const get = async () => {
-    return axios.get(`${API}/api/users`).then(res => {
+  const get = async (params) => {
+    return axios.get(`${API}/api/users`, {
+      params
+    }).then(res => {
       users.value = res.data.users.data;
     });
   }

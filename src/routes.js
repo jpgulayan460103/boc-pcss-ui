@@ -4,6 +4,7 @@ import HomePage from '@/pages/HomePage.vue'
 import LoginPage from '@/pages/LoginPage.vue'
 import EmployeePage from '@/pages/EmployeePage.vue'
 import SchedulePage from '@/pages/SchedulePage.vue'
+import OfficePage from '@/pages/OfficePage.vue'
 import { vueApp } from '@/app.js'
 import { useAuthStore } from '@/stores/auth.js'
 
@@ -27,6 +28,17 @@ const routes = [
     component: UserPage,
     meta: {
       label: 'Users',
+      hasNavBar: true,
+      auth: true,
+      isAdminPage: true,
+    },
+  },
+  {
+    path: '/offices',
+    name: 'offices',
+    component: OfficePage,
+    meta: {
+      label: 'Offices',
       hasNavBar: true,
       auth: true,
       isAdminPage: true,

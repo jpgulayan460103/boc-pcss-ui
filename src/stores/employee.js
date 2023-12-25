@@ -6,12 +6,26 @@ const API = import.meta.env.VITE_API_URL;
 
 export const useEmployeeStore = defineStore('employee', () => {
   const employees = ref([]);
+  const pagination = ref({
+    currentPage: 0,
+    total: 0,
+    from: 0,
+    lastPage: 0,
+  });
   const selectedEmployee = ref({});
   const formType  = ref("create");
 
-  const get = async () => {
-    return axios.get(`${API}/api/employees`).then(res => {
+  const get = async (params) => {
+    return axios.get(`${API}/api/employees`, {
+      params
+    }).then(res => {
       employees.value = res.data.employees.data;
+      pagination.value = {
+        currentPage: res.data.employees.current_page,
+        total: res.data.employees.total,
+        from: res.data.employees.from,
+        lastPage: res.data.employees.last_page,
+      };
     });
   }
 
@@ -41,6 +55,7 @@ export const useEmployeeStore = defineStore('employee', () => {
     employees,
     selectedEmployee,
     formType,
+    pagination,
     get,
     save,
     edit,

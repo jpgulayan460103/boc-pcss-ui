@@ -11,9 +11,10 @@ import DeleteIcon from '@/icons/DeleteIcon.vue'
 import CalendarIcon from '@/icons/CalendarIcon.vue'
 import SearchIcon from '@/icons/SearchIcon.vue'
 import PlusIcon from '@/icons/PlusIcon.vue'
-import { cloneDeep, isEmpty } from 'lodash';
+import { cloneDeep, debounce, isEmpty } from 'lodash';
 import { useThemeStore } from '@/stores/theme.js'
 import dayjs from 'dayjs';
+import Pagination from '@/components/Pagination.vue';
 
 
 const themeStore = useThemeStore()
@@ -62,6 +63,18 @@ const submitEmployeeForm = () => {
   })
 }
 
+const handleResetForm = () => {
+  employeeStore.unSelect();
+  payload.value = {};
+}
+
+
+const handleSearchRecord = debounce(() => {
+  employeeStore.get({
+    q: searchQuery.value,
+    page: 1
+  });
+}, 500)
 
 const handleDeleteEmployee = (schedule) => {
   if(confirm('Are you sure you want to delete this user')){
@@ -71,6 +84,13 @@ const handleDeleteEmployee = (schedule) => {
     })
   }
 }
+
+const handleChangePage = debounce((page) => {
+  employeeStore.get({
+    q: searchQuery.value,
+    page
+  });
+}, 150)
 
 
 watch(
@@ -132,7 +152,7 @@ onMounted(async () => {
 
 
             <div class="col-span-12">
-              <FormInput label="Employee Type" :errors="formErrors?.last_name">
+              <FormInput label="Employee Type" :errors="formErrors?.is_overtimer">
                 <div class="flex space-x-2">
                     <label class="label cursor-pointer space-x-2">
                         <input type="radio" class="radio" :value="0" v-model="payload.is_overtimer" />
@@ -158,7 +178,7 @@ onMounted(async () => {
               </span>
             </button>
 
-            <button class="btn btn-default" v-if="employeeStore.formType == 'update'" @click="employeeStore.unSelect()">
+            <button class="btn btn-default" v-if="employeeStore.formType == 'update'" @click="handleResetForm">
               Cancel
             </button>
           </div>
@@ -172,7 +192,7 @@ onMounted(async () => {
         <div class="flex justify-between flex-row-reverse">
           <div class="flex join py-4">
             <input type="text" placeholder="Search for employee" v-model="searchQuery" @keyup="handleSearchRecord($event)" class="input input-bordered input-sm w-full max-w-xs join-item" />
-            <button class="btn btn-sm join-item">
+            <button type="button" class="btn btn-sm join-item">
               <SearchIcon class="w-4 h-4" />
             </button>
           </div>
@@ -191,7 +211,7 @@ onMounted(async () => {
             </thead>
             <tbody>
               <tr v-for="row in employeeStore.employees">
-                <td>{{ row.office.name }}</td>
+                <td>{{ row.office?.name }}</td>
                 <td>{{ row.full_name }}</td>
                 <td>{{ row.position }}</td>
                 <td>{{ row.is_overtimer ? 'Overtimer' : 'Regular' }}</td>
@@ -225,6 +245,7 @@ onMounted(async () => {
             </tfoot>
           </table>
         </div>
+        <Pagination class="pt-4" :total="employeeStore.pagination.lastPage" :current="employeeStore.pagination.currentPage" @change="handleChangePage" />
       </Card>
     </div>
     

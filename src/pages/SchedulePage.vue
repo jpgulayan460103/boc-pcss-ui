@@ -27,6 +27,7 @@ import { cloneDeep, debounce, forEach } from 'lodash';
 import { useThemeStore } from '@/stores/theme.js'
 import dayjs from 'dayjs';
 import { storeToRefs } from 'pinia';
+import Pagination from '@/components/Pagination.vue';
 
 const { mapCurrent } = useScreens({ xs: '0px', sm: '640px', md: '768px', lg: '1024px' });
 const columns = mapCurrent({ lg: 2 }, 1);
@@ -168,6 +169,21 @@ const handleRemoveShift = (index) => {
   }
 }
 
+const searchQuery = ref("");
+
+const handleChangePage = debounce((page) => {
+  employeeStore.get({
+    q: searchQuery.value,
+    page
+  });
+}, 150)
+
+const handleSearchRecord = debounce(() => {
+  employeeStore.get({
+    q: searchQuery.value,
+    page: 1
+  });
+}, 500)
 
 const handleRemoveEmployee = (employee) => {
   payload.value.employees = payload.value.employees.filter(i => i.id != employee.id)
@@ -345,8 +361,8 @@ onMounted(() => {
             <div class="flex justify-between flex-row-reverse pb-4">
 
               <div class="flex join">
-                <input type="text" placeholder="Search for employee" class="input input-bordered input-sm w-full max-w-xs join-item" />
-                <button class="btn btn-sm join-item">
+                <input type="text" placeholder="Search for employee" class="input input-bordered input-sm w-full max-w-xs join-item"  v-model="searchQuery" @keyup="handleSearchRecord($event)" />
+                <button type="button" class="btn btn-sm join-item">
                   <SearchIcon class="w-4 h-4" />
                 </button>
               </div>
@@ -375,7 +391,7 @@ onMounted(() => {
                 </thead>
                 <tbody>
                   <tr v-for="row in employeeStore.employees">
-                    <td>{{ row.office.name }}</td>
+                    <td>{{ row.office?.name }}</td>
                     <td>{{ row.full_name }}</td>
                     <td>{{ row.position }}</td>
                     <td>{{ row.is_overtimer ? 'Overtimer' : 'Regular' }}</td>
@@ -405,6 +421,7 @@ onMounted(() => {
                 </tfoot>
               </table>
             </div>
+            <Pagination class="pt-4" :total="employeeStore.pagination.lastPage" :current="employeeStore.pagination.currentPage" @change="handleChangePage" />
 
           </div>
 
@@ -469,7 +486,7 @@ onMounted(() => {
             </thead>
             <tbody>
               <tr v-for="row in payload.employees">
-                <td>{{ row.office.name }}</td>
+                <td>{{ row.office?.name }}</td>
                 <td>{{ row.full_name }}</td>
                 <td>{{ row.position }}</td>
                 <td class="text-center">
