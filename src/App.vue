@@ -11,6 +11,7 @@ const route = useRoute()
 import { useAuthStore } from '@/stores/auth.js'
 import { useThemeStore } from '@/stores/theme.js'
 import Card from '@/components/Card.vue';
+import ChangePassword from './components/ChangePassword.vue';
 
 const authStore = useAuthStore();
 const themeStore = useThemeStore();
@@ -41,8 +42,9 @@ onMounted(async () => {
   <div :data-theme="themeStore.theme" style="min-height: 100vh;">
     <NavBar v-if="route.meta.hasNavBar" />
     <MenuBar v-if="route.meta.hasNavBar" />
+    <ChangePassword v-if="route.meta.hasNavBar" />
     
-    <div class="flex bg-base-300 min-h-screen pt-4">
+    <div class="flex bg-base-300 min-h-screen p-4">
       <router-view v-slot="{ Component }">
           <transition
             enter-active-class="transition duration-300"

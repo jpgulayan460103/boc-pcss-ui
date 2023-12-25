@@ -7,10 +7,12 @@ import { useAuthStore } from '@/stores/auth.js'
 import { storeToRefs } from 'pinia'
 
 import { useRouter } from 'vue-router'
+import { useThemeStore } from '@/stores/theme';
 
 const router = useRouter()
 
 const authStore = useAuthStore()
+const themeStore = useThemeStore()
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -30,6 +32,7 @@ const submitForm = debounce(async () => {
     submit.value = false;
     formErrors.value = {};
     await authStore.getUser();
+    themeStore.getTheme();
     router.push({ name: 'home' });
   })
   .catch(err => {

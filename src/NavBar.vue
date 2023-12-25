@@ -6,7 +6,7 @@ import SignIcon from '@/icons/SignIcon.vue'
 import SignOutIcon from '@/icons/SignOutIcon.vue'
 import LightThemeIcon from '@/icons/LightThemeIcon.vue'
 import DarkThemeIcon from '@/icons/DarkThemeIcon.vue'
-import UsersIcon from '@/icons/UsersIcon.vue'
+import LockIcon from '@/icons/LockIcon.vue'
 import profile from '@/assets/profile.png'
 import logo from '@/assets/logo.png'
 import { useRouter } from 'vue-router'
@@ -26,6 +26,10 @@ const handleLogoutButton = async (theme) => {
 
 const handleAuthorizeUser = () => {
   loginModal.click();
+}
+
+const handleChangePasswordButton = () => {
+  changePasswordModal.showModal() 
 }
 
 </script>
@@ -59,6 +63,23 @@ const handleAuthorizeUser = () => {
         <MenuItems
           class="absolute right-0 mb-24 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-base-100 shadow-lg ring-3 ring-black ring-opacity-5 focus:outline-none"
         >
+          <div class="px-1 py-1">
+            <MenuItem v-slot="{ active }">
+              <button
+                :class="[
+                  active ? 'bg-base-300 text-base-content' : 'text-base-content',
+                  'group flex w-full items-center rounded-md px-2 py-2 text-sm',
+                ]"
+                @click="handleChangePasswordButton"
+              >
+                <div class="space-x-2 flex">
+                  <LockIcon class="w-5 h-5" />
+                  <span>Change Password</span>
+                </div>
+              </button>
+            </MenuItem>
+
+          </div>
           <div class="px-1 py-1">
             <MenuItem v-slot="{ active }">
               <button

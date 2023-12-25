@@ -3,7 +3,7 @@
     <Combobox
       :model-value="props.modelValue"
       @update:model-value="(value) => emits('update:modelValue', value.value)"
-      class="z-50"
+      class="z-30"
       >
       <div class="relative mt-1">
         <div
@@ -17,6 +17,7 @@
             @blur="emits('blur', $event)"
             @focusin="inputBoxInFocus = true"
             @focusout="handleInputBoxFocusOut"
+            :placeholder="props.placeholder"
 
           />
           <ComboboxButton
@@ -124,6 +125,10 @@ const props = defineProps({
   size: {
     type: String,
     default: 'md',
+  },
+  placeholder: {
+    type: String,
+    default: '',
   },
 })
 </script>

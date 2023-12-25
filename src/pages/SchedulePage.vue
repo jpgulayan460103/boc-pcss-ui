@@ -9,6 +9,7 @@ import { useOfficeStore } from '@/stores/office'
 import { useScheduleStore } from '@/stores/schedule'
 import { useEmployeeStore } from '@/stores/employee'
 import { useScreens } from 'vue-screen-utils';
+import { useHolidayStore } from '@/stores/holiday.js'
 
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
@@ -22,7 +23,7 @@ import UsersIcon from '@/icons/UsersIcon.vue'
 import UserIcon from '@/icons/UserIcon.vue'
 import PlusIcon from '@/icons/PlusIcon.vue'
 import SearchIcon from '@/icons/SearchIcon.vue'
-import { cloneDeep, debounce } from 'lodash';
+import { cloneDeep, debounce, forEach } from 'lodash';
 import { useThemeStore } from '@/stores/theme.js'
 import dayjs from 'dayjs';
 import { storeToRefs } from 'pinia';
@@ -35,6 +36,7 @@ const userStore = useUserStore();
 const officeStore = useOfficeStore();
 const scheduleStore = useScheduleStore();
 const employeeStore = useEmployeeStore();
+const holidayStore = useHolidayStore()
 const authStore = useAuthStore();
 const router = useRouter()
 
@@ -56,11 +58,15 @@ const handleUpdateRange = (value) => {
 
 const generateDateArray = (start, end) => {
   let currentDate = dayjs(start);
+  let holidays = holidayStore.holidays?.map(i => dayjs(i.holiday_date).format('YYYY-MM-DD'));
+  console.log(holidays);
   let dateArray = [{
     date: currentDate.format('dddd, MMMM D, YYYY'),
     value: currentDate.format('YYYY-MM-DD'),
     day: currentDate.format('dddd'),
     isWeekEnd: ['Sat','Sun'].includes(currentDate.format('ddd')),
+    isHoliday: holidays.includes(currentDate.format('YYYY-MM-DD')),
+    holidayData: holidays.includes(currentDate.format('YYYY-MM-DD')) ? holidayStore.holidays.find(i => dayjs(i.holiday_date).format('YYYY-MM-DD') == currentDate.format('YYYY-MM-DD')) : {},
     isIncluded: true,
   }];
   const endDate = dayjs(end);
@@ -74,6 +80,8 @@ const generateDateArray = (start, end) => {
       value: currentDate.format('YYYY-MM-DD'),
       day: currentDate.format('dddd'),
       isWeekEnd: ['Sat','Sun'].includes(currentDate.format('ddd')),
+      isHoliday: holidays.includes(currentDate.format('YYYY-MM-DD')),
+      holidayData: holidays.includes(currentDate.format('YYYY-MM-DD')) ? holidayStore.holidays.find(i => dayjs(i.holiday_date).format('YYYY-MM-DD') == currentDate.format('YYYY-MM-DD')) : {},
       isIncluded: true,
     });
   } while (currentDate.diff(endDate, 'day') != 0);
@@ -93,11 +101,44 @@ const masks = ref({
   modelValue: 'HH:mm:ss',
 });
 
-const attr = ref([{
-  dates: { repeat: { weekdays: 1 } },
-  content: 'red',
-  popover: false,
-}])
+const attrs = ref([])
+
+
+const filteredSchedules = computed(() => {
+  let filtered = [];
+  // Weekends
+  filtered.push({
+    dates: { repeat: { weekdays: 1 } },
+    content: 'red',
+    popover: false,
+  })
+
+  //Holidays
+
+  forEach(holidayStore.holidays, function(value, index) {
+    filtered.push(  {
+      keys: `holiday-${index}`,
+      highlight: {
+        color: 'red',
+        fillMode: 'outline',
+      },
+      dates: [new Date(value.holiday_date)],
+      labelType: 'holiday',
+      schedule: value,
+      popover: {
+        label: value.name,
+      }
+    });
+  });
+  return filtered;
+});
+
+watch(
+  filteredSchedules,
+  (value) => {
+    attrs.value = cloneDeep(value);
+  }
+)
 
 const handleAddShift = () => {
   if(payload.value.shifts.length == 0){
@@ -162,6 +203,9 @@ const handleAddEmployeeUsingOffice = () => {
       ...filteredEmployee,
     ]
   }
+
+  selectedOffice.value = null;
+  alert("All employees in the selected office are successfully added.");
   // return payloadEmployees.length === 1;
 
 }
@@ -218,6 +262,7 @@ watch(
 onMounted(() => {
   employeeStore.get();
   officeStore.get();
+  holidayStore.get();
 })
 
 
@@ -238,7 +283,7 @@ onMounted(() => {
 
           <div v-if="tab == 'dates'" class="pt-6">
             <div class="overflow-auto w-full">
-              <VDatePicker expanded :columns="columns" :attributes="attr" :rows="2" v-model.range="payload.working_daterange" @update:modelValue="handleUpdateRange" mode="date" :is-dark="themeStore.calendar.isDark" :color="themeStore.calendar.color"/>
+              <VDatePicker expanded :columns="columns" :attributes="attrs" :rows="2" v-model.range="payload.working_daterange" @update:modelValue="handleUpdateRange" mode="date" :is-dark="themeStore.calendar.isDark" :color="themeStore.calendar.color"/>
             </div>
 
             <div class="flex justify-between flex-row-reverse pt-6">
@@ -307,9 +352,9 @@ onMounted(() => {
               </div>
 
               <div class="flex join">
-                <ComboBox v-model="selectedOffice" :options="options" size="sm" />
+                <ComboBox v-model="selectedOffice" :options="options" size="sm" placeholder="Select Office" />
                 <div class="tooltip tooltip-bottom" data-tip="Add all employees in this office">
-                  <button class="btn btn-sm join-item" type="button" @click="handleAddEmployeeUsingOffice">
+                  <button class="btn btn-sm join-item mt-1" type="button" @click="handleAddEmployeeUsingOffice">
                     <PlusIcon class="w-4 h-4" />
                   </button>
                 </div>
@@ -383,10 +428,12 @@ onMounted(() => {
               <tr v-for="row in workingDates">
                 <td>{{ row.date }}</td>
                 <td>
-                  <span v-if="row.isWeekEnd">Overtime Duty</span>
+                  <span v-if="row.isWeekEnd || row.isHoliday">Overtime Duty</span>
                   <span v-else>Regular Duty</span>
                 </td>
-                <td>holiday data</td>
+                <td>
+                  <span v-if="row.isHoliday">{{ row.holidayData.name }}</span>
+                </td>
                 <!-- <td class="text-center">
                   <div class="tooltip tooltip-left" data-tip="Remove Date">
                     <button class="btn btn-ghost btn-sm btn-square">

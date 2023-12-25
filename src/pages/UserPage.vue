@@ -53,6 +53,9 @@ const submit = ref(false);
 const submitUserForm = () => {
   submit.value = true;
   formErrors.value = {}
+  if(payload.value.role == 'admin'){
+    payload.value.office_id = null;
+  }
   userStore.save(payload.value)
   .then(res => {
     if(userStore.formType == 'create'){
@@ -192,7 +195,7 @@ onMounted(async () => {
               </FormInput>
             </div>
 
-            <div class="col-span-12">
+            <div class="col-span-12" v-if="payload.role == 'user'">
               <FormInput label="Assigned Office" :errors="formErrors?.office_id">
                 <ComboBox v-model="payload.office_id" :options="options" />
               </FormInput>
@@ -209,7 +212,7 @@ onMounted(async () => {
               </span>
             </button>
 
-            <button class="btn btn-secondary" v-if="userStore.formType == 'update'" @click="userStore.unSelect()">
+            <button class="btn btn-default" v-if="userStore.formType == 'update'" @click="userStore.unSelect()">
               Cancel
             </button>
           </div>

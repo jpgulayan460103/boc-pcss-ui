@@ -24,28 +24,28 @@ const routeName = computed(() => route.name )
 </script>
 
 <template>
-  <div class="fixed top-1/2 left-2 hidden md:inline z-50" @mouseenter="showLabels = true" @mouseleave="showLabels = false">
-    <ul class="menu menu-xs bg-base-200 rounded-box">
+  <div class="fixed top-1/2 left-1.5 hidden md:inline z-50" @mouseenter="showLabels = true" @mouseleave="showLabels = false">
+    <ul class="menu menu-xs bg-base-200 rounded-box p-0">
       <li>
-        <a href="#" @click="router.push({name: 'home'})" :class="{ 'active': routeName == 'home' }">
+        <a href="#" class="p-2 rounded-box" @click="router.push({name: 'home'})" :class="{ 'active': routeName == 'home' }">
           <HomeIcon class="w-5 h-5" />
           <span v-if="showLabels">Home</span>
         </a>
       </li>
       <li v-if="authStore.authUser.role == 'admin'">
-        <a href="#" @click="router.push({name: 'users'})" :class="{ 'active': routeName == 'users' }">
+        <a href="#" class="p-2 rounded-box" @click="router.push({name: 'users'})" :class="{ 'active': routeName == 'users' }">
           <UsersIcon class="w-5 h-5" />
           <span v-if="showLabels">Users</span>
         </a>
       </li>
       <li>
-        <a href="#" @click="router.push({name: 'employees'})" :class="{ 'active': routeName == 'employees' }">
+        <a href="#" class="p-2 rounded-box" @click="router.push({name: 'employees'})" :class="{ 'active': routeName == 'employees' }">
           <UserIcon class="w-5 h-5" />
           <span v-if="showLabels">Employees</span>
         </a>
       </li>
       <li v-if="authStore.authUser.role == 'admin'">
-        <a href="#" @click="router.push({name: 'schedules'})" :class="{ 'active': routeName == 'schedules' }">
+        <a href="#" class="p-2 rounded-box" @click="router.push({name: 'schedules'})" :class="{ 'active': routeName == 'schedules' }">
           <CalendarDaysIcon class="w-5 h-5" />
           <span v-if="showLabels">Schedules</span>
         </a>

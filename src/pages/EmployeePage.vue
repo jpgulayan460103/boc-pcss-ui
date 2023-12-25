@@ -4,6 +4,7 @@ import ComboBox from '@/components/ComboBox.vue'
 import FormInput from '@/components/FormInput.vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useEmployeeStore } from '@/stores/employee'
+import { useAuthStore } from '@/stores/auth.js'
 import { useOfficeStore } from '@/stores/office'
 import EditIcon from '@/icons/EditIcon.vue'
 import DeleteIcon from '@/icons/DeleteIcon.vue'
@@ -18,6 +19,7 @@ import dayjs from 'dayjs';
 const themeStore = useThemeStore()
 const employeeStore = useEmployeeStore();
 const officeStore = useOfficeStore();
+const authStore = useAuthStore()
 
 const searchQuery = ref("");
 
@@ -37,6 +39,9 @@ const submit = ref(false);
 const submitEmployeeForm = () => {
   submit.value = true;
   formErrors.value = {}
+  if(authStore.authUser.role != 'admin'){
+    payload.value.office_id = authStore.authUser.office_id;
+  }
   employeeStore.save(payload.value)
   .then((res) => {
     if (employeeStore.formType == 'create') {
@@ -119,7 +124,7 @@ onMounted(async () => {
               </FormInput>
             </div>
 
-            <div class="col-span-12">
+            <div class="col-span-12" v-if="authStore.authUser.role == 'admin'">
               <FormInput label="Assigned Office" :errors="formErrors?.office_id">
                 <ComboBox v-model="payload.office_id" :options="options" />
               </FormInput>
@@ -153,7 +158,7 @@ onMounted(async () => {
               </span>
             </button>
 
-            <button class="btn btn-secondary" v-if="employeeStore.formType == 'update'" @click="employeeStore.unSelect()">
+            <button class="btn btn-default" v-if="employeeStore.formType == 'update'" @click="employeeStore.unSelect()">
               Cancel
             </button>
           </div>
@@ -177,19 +182,19 @@ onMounted(async () => {
           <table class="table table-zebra table-sm">
             <thead>
               <tr>
+                <th>Office</th>
                 <th>Full Name</th>
                 <th>Position/Designation</th>
                 <th>Employee Type</th>
-                <th>Office</th>
                 <th class="text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="row in employeeStore.employees">
+                <td>{{ row.office.name }}</td>
                 <td>{{ row.full_name }}</td>
                 <td>{{ row.position }}</td>
                 <td>{{ row.is_overtimer ? 'Overtimer' : 'Regular' }}</td>
-                <td>{{ row.office.name }}</td>
                 <td class="text-center">
                   <div class="join">
                     <div class="tooltip tooltip-left" data-tip="View Schedules">

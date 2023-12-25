@@ -3,11 +3,11 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { useScheduleStore } from '@/stores/schedule'
 
-const scheduleStore = useScheduleStore();
 
 const API = import.meta.env.VITE_API_URL;
 
 export const useUserStore = defineStore('user', () => {
+  const scheduleStore = useScheduleStore();
   const users = ref([]);
   const selectedUser = ref({});
   const formType = ref("create");
@@ -45,6 +45,10 @@ export const useUserStore = defineStore('user', () => {
   const destroy = (payload) => {
     return axios.delete(`${API}/api/users/${payload.id}`);
   }
+  
+  const changePassword = (payload) => {
+    return axios.post(`${API}/api/user/change-password`, payload);
+  }
 
   return {
     users,
@@ -56,5 +60,6 @@ export const useUserStore = defineStore('user', () => {
     destroy,
     viewSchedule,
     unSelect,
+    changePassword,
   }
 })

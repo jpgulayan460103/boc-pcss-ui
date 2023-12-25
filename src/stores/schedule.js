@@ -32,6 +32,10 @@ export const useScheduleStore = defineStore('schedule', () => {
     }
   }
 
+  const download = async (payload) => {
+    return axios.post(`${API}/api/schedules/${payload.id}`);
+  }
+
   const edit = (data) => {
     selectedSchedule.value = data;
     formType.value = "update"
@@ -57,6 +61,7 @@ export const useScheduleStore = defineStore('schedule', () => {
     selectedSchedule,
     formType,
     save,
+    download,
     get,
     edit,
     view,
