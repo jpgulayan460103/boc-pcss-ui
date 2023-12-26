@@ -29,9 +29,9 @@ const handleClickOption = (option) => {
 }
 
 
-const handleSearchOption = () => {
+const handleSearchOption = debounce(() => {
   props.search(searchQuery.value);
-};
+}, 250);
 
 const emit = defineEmits(['select'])
 

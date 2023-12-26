@@ -281,7 +281,7 @@ watch(
 const employeeOptions = ref([]);
 
 
-const searchEmployee = debounce((q) => {
+const searchEmployee = (q) => {
   employeeStore.search({q})
   .then(res => {
     employeeOptions.value = res.data.employees.data.map(i => {
@@ -292,7 +292,7 @@ const searchEmployee = debounce((q) => {
       }
     })
   })
-}, 150)
+}
 
 const handleOptionSelectEmployee = (selectedEmployee) => {
   // console.log(selectedEmployee.data);
