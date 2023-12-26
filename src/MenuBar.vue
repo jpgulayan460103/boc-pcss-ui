@@ -48,7 +48,7 @@ const routeName = computed(() => route.name )
       <li v-if="authStore.authUser.role == 'admin'">
         <a href="#" class="p-2 rounded-box" @click="router.push({name: 'schedules'})" :class="{ 'active': routeName == 'schedules' }">
           <CalendarDaysIcon class="w-5 h-5" />
-          <span v-if="showLabels">Schedules</span>
+          <span v-if="showLabels">Generate Schedules</span>
         </a>
       </li>
       <li v-if="authStore.authUser.role == 'admin'">
@@ -86,7 +86,7 @@ const routeName = computed(() => route.name )
       <li v-if="authStore.authUser.role == 'admin'">
         <a href="#" class="p-2 rounded-box" @click="router.push({name: 'schedules'})" :class="{ 'active': routeName == 'schedules' }">
           <CalendarDaysIcon class="w-5 h-5" />
-          Schedules
+          Generate Schedules
         </a>
       </li>
       <li v-if="authStore.authUser.role == 'admin'">

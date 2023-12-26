@@ -217,11 +217,11 @@ onMounted(async () => {
                 <td>{{ row.is_overtimer ? 'Overtimer' : 'Regular' }}</td>
                 <td class="text-center">
                   <div class="join">
-                    <div class="tooltip tooltip-left" data-tip="View Schedules">
+                    <!-- <div class="tooltip tooltip-left" data-tip="View Schedules">
                       <button class="btn btn-ghost btn-sm btn-square" @click="employeeStore.viewSchedule(row)">
                         <CalendarIcon class="w-5 h-5" />
                       </button>
-                    </div>
+                    </div> -->
                     <div class="tooltip tooltip-left" data-tip="Edit Employee">
                       <button class="btn btn-ghost btn-sm btn-square" @click="employeeStore.edit(row)">
                         <EditIcon class="w-5 h-5" />

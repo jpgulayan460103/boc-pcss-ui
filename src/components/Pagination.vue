@@ -2,6 +2,7 @@
 
 import ChevronDoubleIcon from '@/icons/ChevronDoubleIcon.vue'
 import ChevronIcon from '@/icons/ChevronIcon.vue'
+import { ref } from 'vue';
 
 const props = defineProps({
   total: {
@@ -23,6 +24,15 @@ const handleClickPage = (page) => {
 
 const emit = defineEmits(['change'])
 
+const pager = ref(null);
+
+const handleGoToPage = () => {
+  if(pager.value > props.total){
+    pager.value = props.total;
+  }
+  handleClickPage(pager.value);
+}
+
 </script>
 
 <template>
@@ -43,12 +53,17 @@ const emit = defineEmits(['change'])
     <!-- </button> -->
 
 
-    <div class="dropdown dropdown-top">
+    <div class="dropdown dropdown-bottom">
       <div tabindex="0" role="button" class="join-item btn btn-sm">Page {{ props.current }}</div>
-      <ul tabindex="0" class="dropdown-content p2 z-30 menu shadow bg-base-100 rounded-box w-52">
-        <li v-for="page in total" @click="handleClickPage(page)">
-          <a :class="{'active': page == props.current}">Page {{ page }}</a>
+      <ul tabindex="0" class="dropdown-content p-0 z-30 menu shadow bg-base-100 rounded-box w-52">
+        <li>
+          <a>
+            <input type="number" v-model="pager" step="1" @keypress.enter="handleGoToPage" class="input input-xs input-bordered" placeholder="Go to page">
+          </a>
         </li>
+        <!-- <li v-for="page in total" @click="handleClickPage(page)">
+          <a :class="{'active': page == props.current}">Page {{ page }}</a>
+        </li> -->
       </ul>
     </div>
 
