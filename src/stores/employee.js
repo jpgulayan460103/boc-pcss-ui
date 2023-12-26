@@ -29,6 +29,10 @@ export const useEmployeeStore = defineStore('employee', () => {
     });
   }
 
+  const search = async (params) => {
+    return axios.get(`${API}/api/employees`, { params });
+  }
+
   const save = async (payload) => {
     if(formType.value == 'create'){
       return axios.post(`${API}/api/employees`, payload)
@@ -57,6 +61,7 @@ export const useEmployeeStore = defineStore('employee', () => {
     formType,
     pagination,
     get,
+    search,
     save,
     edit,
     destroy,

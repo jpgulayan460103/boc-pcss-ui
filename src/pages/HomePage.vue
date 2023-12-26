@@ -52,8 +52,10 @@ const handleDeleteSchedule = (schedule) => {
 }
 
 const handleDownloadSchedule = (schedule) => {
+  submit.value = true
   scheduleStore.download(schedule)
     .then(res => {
+      submit.value = false
       window.location = `${API}/${res.data.url}`
     })
 }
@@ -263,8 +265,9 @@ watch(
                   <td>
                     <div class="join">
                       <div class="tooltip tooltip-left" data-tip="Download CSV">
-                        <button class="btn btn-ghost btn-sm btn-square" @click="handleDownloadSchedule(row)">
-                          <DownloadIcon class="w-5 h-5" />
+                        <button class="btn btn-ghost btn-sm btn-square" @click="handleDownloadSchedule(row)" :disabled="submit">
+                          <span class="loading loading-spinner loading-xs" v-if="submit"></span>
+                          <DownloadIcon class="w-5 h-5" v-else />
                         </button>
                       </div>
                       <div class="tooltip tooltip-left" data-tip="Delete Schedule" v-if="authStore.authUser.role == 'admin'">

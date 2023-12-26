@@ -18,6 +18,7 @@ import PlusIcon from '@/icons/PlusIcon.vue'
 import { cloneDeep, debounce, isEmpty } from 'lodash';
 import { useThemeStore } from '@/stores/theme.js'
 import dayjs from 'dayjs';
+import Pagination from '@/components/Pagination.vue';
 
 
 const themeStore = useThemeStore()
@@ -80,6 +81,13 @@ const submitUserForm = () => {
   })
 }
 
+const handleChangePage = debounce((page) => {
+  userStore.get({
+    q: searchQuery.value,
+    page
+  });
+}, 150)
+
 
 watch(
   () => userStore.selectedUser,
@@ -122,6 +130,7 @@ const handleResetForm = () => {
 const handleSearchRecord = debounce(() => {
   userStore.get({
     q: searchQuery.value,
+    page: 1,
   });
 }, 500)
 
@@ -290,6 +299,7 @@ onMounted(async () => {
             </tfoot>
           </table>
         </div>
+        <Pagination class="pt-4" :total="userStore.pagination.lastPage" :current="userStore.pagination.currentPage" @change="handleChangePage" />
       </Card>
     </div>
 

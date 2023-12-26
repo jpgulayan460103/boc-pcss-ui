@@ -12,11 +12,24 @@ export const useUserStore = defineStore('user', () => {
   const selectedUser = ref({});
   const formType = ref("create");
 
+  const pagination = ref({
+    currentPage: 0,
+    total: 0,
+    from: 0,
+    lastPage: 0,
+  });
+
   const get = async (params) => {
     return axios.get(`${API}/api/users`, {
       params
     }).then(res => {
       users.value = res.data.users.data;
+      pagination.value = {
+        currentPage: res.data.users.current_page,
+        total: res.data.users.total,
+        from: res.data.users.from,
+        lastPage: res.data.users.last_page,
+      };
     });
   }
 
@@ -54,6 +67,7 @@ export const useUserStore = defineStore('user', () => {
 
   return {
     users,
+    pagination,
     selectedUser,
     formType,
     get,

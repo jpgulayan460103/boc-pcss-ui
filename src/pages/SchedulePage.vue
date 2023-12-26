@@ -28,6 +28,7 @@ import { useThemeStore } from '@/stores/theme.js'
 import dayjs from 'dayjs';
 import { storeToRefs } from 'pinia';
 import Pagination from '@/components/Pagination.vue';
+import AutoComplete from '@/components/AutoComplete.vue';
 
 const { mapCurrent } = useScreens({ xs: '0px', sm: '640px', md: '768px', lg: '1024px' });
 const columns = mapCurrent({ lg: 2 }, 1);
@@ -190,10 +191,13 @@ const handleRemoveEmployee = (employee) => {
 }
 
 const handleAddEmployee = (employee) => {
-  payload.value.employees = [
-    ...payload.value.employees,
-    employee
-  ]
+  const filteredEmployee = payload.value.employees.filter(i => i.id == employee.id);
+  if(filteredEmployee.length == 0){
+    payload.value.employees = [
+      ...payload.value.employees,
+      employee
+    ]
+  }
 };
 
 const isEmployeeAdded = (employee) => {
@@ -273,6 +277,36 @@ watch(
     }
   }
 )
+
+const employeeOptions = ref([]);
+
+
+const searchEmployee = debounce((q) => {
+  employeeStore.search({q})
+  .then(res => {
+    employeeOptions.value = res.data.employees.data.map(i => {
+      return {
+        value: i.id,
+        label: i.full_name,
+        data: i,
+      }
+    })
+  })
+}, 150)
+
+const handleOptionSelectEmployee = (selectedEmployee) => {
+  // console.log(selectedEmployee.data);
+  handleAddEmployee(selectedEmployee.data)
+}
+
+// const employeeOptions = computed(() => {
+//   return employeeStore.employees.map(i => {
+//     return {
+//       value: i.id,
+//       label: i.full_name,
+//     }
+//   })
+// })
 
 
 onMounted(() => {
@@ -473,7 +507,19 @@ onMounted(() => {
     </div>
 
     <div class="col-span-12 md:col-span-6" v-if="tab == 'employees' || tab == 'shifts'">
-      <Card title="List of Employee">
+      <Card title="List of Employees to Schedule">
+
+        <div class="flex justify-between flex-row-reverse pb-4">
+
+          <div class="flex join">
+            <AutoComplete :options="employeeOptions" :search="searchEmployee" @select="handleOptionSelectEmployee" placeholder="Search for employee name"/>
+            <button type="button" class="btn btn-sm join-item">
+              <SearchIcon class="w-4 h-4" />
+            </button>
+          </div>
+
+        </div>
+
         <div class="overflow-x-auto">
           <table class="table table-zebra table-sm">
             <thead>
