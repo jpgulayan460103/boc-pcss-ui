@@ -29,6 +29,7 @@ import dayjs from 'dayjs';
 import { storeToRefs } from 'pinia';
 import Pagination from '@/components/Pagination.vue';
 import AutoComplete from '@/components/AutoComplete.vue';
+import TableHeader from '@/components/TableHeader.vue';
 
 const { mapCurrent } = useScreens({ xs: '0px', sm: '640px', md: '768px', lg: '1024px' });
 const columns = mapCurrent({ lg: 2 }, 1);
@@ -174,9 +175,30 @@ const searchQuery = ref("");
 const handleChangePage = debounce((page) => {
   employeeStore.get({
     q: searchQuery.value,
-    page
+    page,
+    sortTable: sortTable.value
   });
 }, 150)
+
+const sortTable = ref({
+  field: null,
+  order: null,
+})
+
+const sortEmployees = debounce((sortTable) => {
+  employeeStore.get({
+    q: searchQuery.value,
+    page: 1,
+    sortTable
+  });
+}, 250)
+
+watch(
+  sortTable,
+  (value) => {
+    sortEmployees(value)
+  }
+)
 
 const handleSearchRecord = debounce(() => {
   employeeStore.get({
@@ -285,9 +307,14 @@ watch(
 
 const employeeOptions = ref([]);
 
-
 const searchEmployee = (q) => {
-  employeeStore.search({q})
+  employeeStore.search({
+    q,
+    sortTable: {
+      field: 'full_name',
+      order: 'asc',
+    }
+  })
   .then(res => {
     employeeOptions.value = res.data.employees.data.map(i => {
       return {
@@ -300,7 +327,6 @@ const searchEmployee = (q) => {
 }
 
 const handleOptionSelectEmployee = (selectedEmployee) => {
-  // console.log(selectedEmployee.data);
   handleAddEmployee(selectedEmployee.data)
 }
 
@@ -416,10 +442,10 @@ onMounted(() => {
               <table class="table table-zebra table-sm">
                 <thead>
                   <tr>
-                    <th>Office</th>
-                    <th>Fullname</th>
-                    <th>Position</th>
-                    <th>Employee Type</th>
+                    <th><TableHeader field="office_id" label="Office" v-model="sortTable" /></th>
+                    <th><TableHeader field="full_name" label="Full Name" v-model="sortTable" /></th>
+                    <th><TableHeader field="position" label="Position/Designation" v-model="sortTable" /></th>
+                    <th><TableHeader field="is_overtimer" label="Employee Type" v-model="sortTable" /></th>
                     <th class="text-center">Actions</th>
                   </tr>
                 </thead>

@@ -15,6 +15,9 @@ import { cloneDeep, debounce, isEmpty } from 'lodash';
 import { useThemeStore } from '@/stores/theme.js'
 import dayjs from 'dayjs';
 import Pagination from '@/components/Pagination.vue';
+import ChevronUpDownIcon from '@/icons/ChevronUpDownIcon.vue';
+import ChevronIcon from '@/icons/ChevronIcon.vue';
+import TableHeader from '@/components/TableHeader.vue';
 
 
 const themeStore = useThemeStore()
@@ -88,10 +91,30 @@ const handleDeleteEmployee = (schedule) => {
 const handleChangePage = debounce((page) => {
   employeeStore.get({
     q: searchQuery.value,
-    page
+    page,
+    sortTable: sortTable.value
   });
 }, 150)
 
+const sortTable = ref({
+  field: null,
+  order: null,
+})
+
+const sortEmployees = debounce((sortTable) => {
+  employeeStore.get({
+    q: searchQuery.value,
+    page: 1,
+    sortTable
+  });
+}, 250)
+
+watch(
+  sortTable,
+  (value) => {
+    sortEmployees(value)
+  }
+)
 
 watch(
   () => employeeStore.selectedEmployee,
@@ -101,8 +124,6 @@ watch(
     }
   }
 )
-
-
 
 onMounted(async () => {
   employeeStore.get();
@@ -202,10 +223,10 @@ onMounted(async () => {
           <table class="table table-zebra table-sm">
             <thead>
               <tr>
-                <th>Office</th>
-                <th>Full Name</th>
-                <th>Position/Designation</th>
-                <th>Employee Type</th>
+                <th><TableHeader field="office_id" label="Office" v-model="sortTable" /></th>
+                <th><TableHeader field="full_name" label="Full Name" v-model="sortTable" /></th>
+                <th><TableHeader field="position" label="Position/Designation" v-model="sortTable" /></th>
+                <th><TableHeader field="is_overtimer" label="Employee Type" v-model="sortTable" /></th>
                 <th class="text-center">Actions</th>
               </tr>
             </thead>

@@ -19,6 +19,7 @@ import { cloneDeep, debounce, isEmpty } from 'lodash';
 import { useThemeStore } from '@/stores/theme.js'
 import dayjs from 'dayjs';
 import Pagination from '@/components/Pagination.vue';
+import TableHeader from '@/components/TableHeader.vue';
 
 
 const themeStore = useThemeStore()
@@ -84,9 +85,30 @@ const submitUserForm = () => {
 const handleChangePage = debounce((page) => {
   userStore.get({
     q: searchQuery.value,
-    page
+    page,
+    sortTable: sortTable.value
   });
 }, 150)
+
+const sortTable = ref({
+  field: null,
+  order: null,
+})
+
+const sortUsers = debounce((sortTable) => {
+  userStore.get({
+    q: searchQuery.value,
+    page: 1,
+    sortTable
+  });
+}, 250)
+
+watch(
+  sortTable,
+  (value) => {
+    sortUsers(value)
+  }
+)
 
 
 watch(
@@ -259,11 +281,11 @@ onMounted(async () => {
           <table class="table table-zebra table-sm">
             <thead>
               <tr>
-                <th>Role</th>
-                <th>Username</th>
-                <th>Full Name</th>
-                <th>Assigned Office</th>
-                <th>Position/Designation</th>
+                <th><TableHeader field="role" label="Role" v-model="sortTable" /></th>
+                <th><TableHeader field="email" label="Username" v-model="sortTable" /></th>
+                <th><TableHeader field="full_name" label="Full Name" v-model="sortTable" /></th>
+                <th><TableHeader field="office_id" label="Assigned Office" v-model="sortTable" /></th>
+                <th><TableHeader field="position" label="Position/Designation" v-model="sortTable" /></th>
                 <th class="text-center">Actions</th>
               </tr>
             </thead>
