@@ -61,7 +61,6 @@ const handleUpdateRange = (value) => {
 const generateDateArray = (start, end) => {
   let currentDate = dayjs(start);
   let holidays = holidayStore.holidays?.map(i => dayjs(i.holiday_date).format('YYYY-MM-DD'));
-  console.log(holidays);
   let dateArray = [{
     date: currentDate.format('dddd, MMMM D, YYYY'),
     value: currentDate.format('YYYY-MM-DD'),
@@ -73,7 +72,7 @@ const generateDateArray = (start, end) => {
   }];
   const endDate = dayjs(end);
   if(currentDate.diff(endDate, 'day') == 0){
-    return [];
+    return dateArray;
   }
   do {
     currentDate = currentDate.add(1, 'day')
@@ -212,15 +211,21 @@ const options = computed(() => officeStore.offices.map(i => {
   }
 }))
 
-const handleAddEmployeeUsingOffice = () => {
+const handleAddEmployeeUsingOffice = async () => {
   const payloadEmployees = payload.value.employees.filter(i => i.office_id !== selectedOffice.value);
-  const filteredEmployee = employeeStore.employees.filter(i => i.office_id == selectedOffice.value);
+
+  const params = {
+    getType: 'all',
+    office_id: selectedOffice.value
+  };
+
+  const officeEmployees = await employeeStore.search(params).then(res => res.data.employees);
 
   payload.value = {
     ...payload.value,
     employees: [
       ...payloadEmployees,
-      ...filteredEmployee,
+      ...officeEmployees,
     ]
   }
 
@@ -299,14 +304,9 @@ const handleOptionSelectEmployee = (selectedEmployee) => {
   handleAddEmployee(selectedEmployee.data)
 }
 
-// const employeeOptions = computed(() => {
-//   return employeeStore.employees.map(i => {
-//     return {
-//       value: i.id,
-//       label: i.full_name,
-//     }
-//   })
-// })
+const getShiftErrors = (index) => {
+  return formErrors.value[`shifts.${index}.working_time_out`];
+}
 
 
 onMounted(() => {
@@ -368,7 +368,7 @@ onMounted(() => {
 
             <div class="grid grid-cols-12" v-for="(shift, index) in payload.shifts">
               <div class="col-span-9">
-                <FormInput label="Working Hours">
+                <FormInput :label="`Shift ${(index + 1)} Time Schedule`" :errors="getShiftErrors(index)">
                   <div class="input input-bordered w-full space-x-2">
                     <VDatePicker class="mt-1.5" expanded v-model.string="shift.working_time_in" mode="time" :masks="masks" :is-dark="themeStore.calendar.isDark" :color="themeStore.calendar.color" hide-time-header />
                     <span>to</span>
