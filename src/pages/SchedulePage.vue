@@ -10,6 +10,7 @@ import { useScheduleStore } from '@/stores/schedule'
 import { useEmployeeStore } from '@/stores/employee'
 import { useScreens } from 'vue-screen-utils';
 import { useHolidayStore } from '@/stores/holiday.js'
+import { v4 as uuidv4 } from 'uuid';
 
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
@@ -23,7 +24,7 @@ import UsersIcon from '@/icons/UsersIcon.vue'
 import UserIcon from '@/icons/UserIcon.vue'
 import PlusIcon from '@/icons/PlusIcon.vue'
 import SearchIcon from '@/icons/SearchIcon.vue'
-import { cloneDeep, debounce, forEach } from 'lodash';
+import { cloneDeep, debounce, forEach, groupBy, isEmpty, uniq } from 'lodash';
 import { useThemeStore } from '@/stores/theme.js'
 import dayjs from 'dayjs';
 import { storeToRefs } from 'pinia';
@@ -44,7 +45,7 @@ const authStore = useAuthStore();
 const router = useRouter()
 
 
-const tab = ref("employees");
+const tab = ref("shifts");
 const formErrors = ref({});
 
 const { payload } = storeToRefs(scheduleStore);
@@ -142,21 +143,58 @@ watch(
   }
 )
 
+const formatTime = (time) => {
+  return dayjs(`2001-01-01 ${time}`).format("hh:mm:ss A");
+}
+
+const formatDate = (date) => {
+  return dayjs(date).format("MMMM D, YYYY");
+}
+
+const getPayloadOffice = () => {
+  if(payload.value.office_id){
+    const office = officeStore.offices.find(i => i.id == payload.value.office_id);
+    return office.name;
+  }
+  return "";
+}
+
+const selectedShift = ref("");
+
+
+const selectedShiftData = computed(() => {
+  const data = payload.value.shifts.find(i => i.uuid == selectedShift.value);
+  if(data){
+    return {
+      ...data,
+      index: payload.value.shifts.findIndex(i => i.uuid == selectedShift.value)
+    }
+  }else{
+    return {}
+  }
+})
+
 const handleAddShift = () => {
   if(payload.value.shifts.length == 0){
+    const uuid = uuidv4();
     payload.value.shifts = [
       ...payload.value.shifts,
       {
+        uuid,
         working_time_in: "08:00:00",
         working_time_out: "17:00:00",
+        employees: [],
       }
     ];
+    selectedShift.value = uuid;
   }else{
     payload.value.shifts = [
       ...payload.value.shifts,
       {
+        uuid: uuidv4(),
         working_time_in: "00:00:00",
         working_time_out: "00:00:00",
+        employees: [],
       }
     ];
   }
@@ -167,6 +205,19 @@ const showErrors = ref(false);
 const handleRemoveShift = (index) => {
   if (index > -1) { // only splice array when item is found
     payload.value.shifts.splice(index, 1); // 2nd parameter means remove one item only
+    if(index == selectedShiftData.value.index){
+      if(payload.value.shifts.length == 0){
+        selectedShift.value = '';
+      }else{
+        selectedShift.value = payload.value.shifts[0].uuid;
+      }
+    }else{
+      if(payload.value.shifts.length == 0){
+        selectedShift.value = '';
+      }else{
+        selectedShift.value = payload.value.shifts[0].uuid;
+      }
+    }
   }
 }
 
@@ -208,22 +259,43 @@ const handleSearchRecord = debounce(() => {
 }, 500)
 
 const handleRemoveEmployee = (employee) => {
-  payload.value.employees = payload.value.employees.filter(i => i.id != employee.id)
+  // payload.value.employees = payload.value.employees.filter(i => i.id != employee.id)
+  if(!isEmpty(selectedShiftData.value)){
+    payload.value.shifts[selectedShiftData.value.index].employees = payload.value.shifts[selectedShiftData.value.index].employees.filter(i => i.id != employee.id)
+  }
 }
 
 const handleAddEmployee = (employee) => {
-  const filteredEmployee = payload.value.employees.filter(i => i.id == employee.id);
-  if(filteredEmployee.length == 0){
-    payload.value.employees = [
-      ...payload.value.employees,
-      employee
-    ]
+  // const filteredEmployee = payload.value.employees.filter(i => i.id == employee.id);
+  // if(filteredEmployee.length == 0){
+  //   payload.value.employees = [
+  //     ...payload.value.employees,
+  //     employee
+  //   ]
+  // }
+
+
+  if(!isEmpty(selectedShiftData.value)){
+    const filteredEmployee = payload.value.shifts[selectedShiftData.value.index].employees.filter(i => i.id == employee.id);
+    if(filteredEmployee.length == 0){
+      payload.value.shifts[selectedShiftData.value.index].employees = [
+        ...payload.value.shifts[selectedShiftData.value.index].employees,
+        employee
+      ]
+    }
   }
 };
 
 const isEmployeeAdded = (employee) => {
-  const payloadEmployees = payload.value.employees.filter(i => i.id == employee.id);
-  return payloadEmployees.length === 1;
+  // const payloadEmployees = payload.value.employees.filter(i => i.id == employee.id);
+  // return payloadEmployees.length === 1;
+
+  if(!isEmpty(selectedShiftData.value)){    
+    const payloadEmployees = payload.value.shifts[selectedShiftData.value.index].employees.filter(i => i.id == employee.id);
+    return payloadEmployees.length === 1;
+  }
+
+  return false;
 }
 
 const options = computed(() => officeStore.offices.map(i => {
@@ -234,27 +306,45 @@ const options = computed(() => officeStore.offices.map(i => {
 }))
 
 const handleAddEmployeeUsingOffice = async () => {
-  const payloadEmployees = payload.value.employees.filter(i => i.office_id !== selectedOffice.value);
+  // const payloadEmployees = payload.value.employees.filter(i => i.office_id !== selectedOffice.value);
 
-  const params = {
-    getType: 'all',
-    office_id: selectedOffice.value
-  };
+  // const params = {
+  //   getType: 'all',
+  //   office_id: selectedOffice.value
+  // };
 
-  const officeEmployees = await employeeStore.search(params).then(res => res.data.employees);
+  // const officeEmployees = await employeeStore.search(params).then(res => res.data.employees);
 
-  payload.value = {
-    ...payload.value,
-    employees: [
-      ...payloadEmployees,
-      ...officeEmployees,
+  // payload.value = {
+  //   ...payload.value,
+  //   employees: [
+  //     ...payloadEmployees,
+  //     ...officeEmployees,
+  //   ]
+  // }
+
+  // selectedOffice.value = null;
+  // alert("All employees in the selected office are successfully added.");
+
+
+  if(!isEmpty(selectedShiftData.value)){    
+    const payloadEmployees = payload.value.shifts[selectedShiftData.value.index].employees.filter(i => i.office_id !== selectedOffice.value);
+
+    const params = {
+      getType: 'all',
+      office_id: selectedOffice.value
+    };
+
+    const officeEmployees = await employeeStore.search(params).then(res => res.data.employees);
+
+    payload.value.shifts[selectedShiftData.value.index].employees = [
+        ...payloadEmployees,
+        ...officeEmployees
     ]
+
+    selectedOffice.value = null;
+    alert("All employees in the selected office are successfully added.");
   }
-
-  selectedOffice.value = null;
-  alert("All employees in the selected office are successfully added.");
-  // return payloadEmployees.length === 1;
-
 }
 
 const submitScheduleForm = async () => {
@@ -334,6 +424,33 @@ const getShiftErrors = (index) => {
   return formErrors.value[`shifts.${index}.working_time_out`];
 }
 
+const getSummaryEmployee = (employees) => {
+  const positions = groupBy(employees, 'position');
+  const result = Object.keys(positions).map((key) => [key, positions[key]])
+
+  return result.map(i => ({
+    label: i[0],
+    total: i[1].length
+  }));
+}
+
+const getMainCardTitle = computed(() => {
+  return '';
+  //     <Card :title="tab == 'dates' ? 'Set Working Dates' :  (tab == 'employees' ? 'Set Employees' : 'Set Work Shifts')">
+  switch (tab.value) {
+    case 'shifts':
+      return 'Set Work Shifts';
+    case 'employees':
+      return 'Set Employees';
+    case 'dates':
+      return 'Set Working Dates'
+    case 'summary':
+      return 'View Summary'
+    default:
+      return '';
+  }
+})
+
 
 onMounted(() => {
   employeeStore.get();
@@ -348,20 +465,34 @@ onMounted(() => {
   <div class="container mx-auto grid grid-cols-12 gap-2">
 
     <div class="col-span-12 md:col-span-6">
-      <Card :title="tab == 'dates' ? 'Set Working Dates' :  (tab == 'employees' ? 'Set Employees' : 'Set Work Shifts')">
+      <Card :title="getMainCardTitle">
         <div role="tablist" class="tabs tabs-bordered">
-          <a role="tab" class="tab" :class="{'tab-active': tab == 'employees'}" @click="tab = 'employees'">Employees</a>
           <a role="tab" class="tab" :class="{'tab-active': tab == 'shifts'}" @click="tab = 'shifts'">Shifts</a>
+          <a role="tab" class="tab" :class="{'tab-active': tab == 'employees'}" @click="tab = 'employees'">Employees</a>
           <a role="tab" class="tab" :class="{'tab-active': tab == 'dates'}" @click="tab = 'dates'">Dates</a>
+          <a role="tab" class="tab" :class="{'tab-active': tab == 'summary'}" @click="tab = 'summary'">Summary</a>
         </div>
 
         <form @submit.prevent="submitScheduleForm">
 
-          <div v-if="tab == 'dates'" class="pt-6">
-            <div class="overflow-auto w-full">
-              <VDatePicker expanded :columns="columns" :attributes="attrs" :rows="2" v-model.range="payload.working_daterange" @update:modelValue="handleUpdateRange" mode="date" :is-dark="themeStore.calendar.isDark" :color="themeStore.calendar.color"/>
-            </div>
+          <div v-if="tab == 'summary'" class="pt-6">
 
+            <div class="space-y-2">
+              <p class="text-sm"><span class="font-bold">Schedule:</span> {{ formatDate(payload.working_daterange.start) }} - {{ formatDate(payload.working_daterange.end) }}</p>
+              <p class="text-sm"><span class="font-bold">Assigned Office:</span> {{ getPayloadOffice() }}</p>
+              <p class="text-sm"><span class="font-bold">Shifts:</span> {{ payload.shifts.length }}</p>
+              <p class="text-sm pl-4" v-for="(shift, index) in payload.shifts">
+                <span class="font-bold">Shift {{ index +1 }}: </span>
+                <span>{{ formatTime(shift.working_time_in) }} - {{ formatTime(shift.working_time_out) }}</span> <br>
+                <span class="pl-4 font-bold">Employees: </span> <span>{{ shift.employees.length }}</span><br>
+                <span class="pl-4" v-for="employee in getSummaryEmployee(shift.employees)">
+                  <span class="font-bold">{{ employee.label }}: </span>
+                  <span>{{ employee.total }}</span>
+                  <br>
+                </span>
+              </p>
+            </div>
+          
             <div class="flex justify-between flex-row-reverse pt-6">
               <button class="btn btn-primary" :disabled="submit">
                 Generate Schedules
@@ -379,6 +510,12 @@ onMounted(() => {
                   <button type="button" class="btn btn-sm btn-ghost" @click="showErrors = false">Close</button>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <div v-if="tab == 'dates'" class="pt-6">
+            <div class="overflow-auto w-full">
+              <VDatePicker expanded :columns="columns" :attributes="attrs" :rows="2" v-model.range="payload.working_daterange" @update:modelValue="handleUpdateRange" mode="date" :is-dark="themeStore.calendar.isDark" :color="themeStore.calendar.color"/>
             </div>
 
           </div>
@@ -445,7 +582,7 @@ onMounted(() => {
                     <th><TableHeader field="office_id" label="Office" v-model="sortTable" /></th>
                     <th><TableHeader field="full_name" label="Full Name" v-model="sortTable" /></th>
                     <th><TableHeader field="position" label="Position/Designation" v-model="sortTable" /></th>
-                    <th><TableHeader field="is_overtimer" label="Employee Type" v-model="sortTable" /></th>
+                    <th><TableHeader field="is_overtimer" label="Type" v-model="sortTable" /></th>
                     <th class="text-center">Actions</th>
                   </tr>
                 </thead>
@@ -463,9 +600,15 @@ onMounted(() => {
                           </span>
                         </div>
 
-                        <div class="tooltip tooltip-left" data-tip="Add Employee" v-else>
+                        <div class="tooltip tooltip-left" data-tip="Add Employee" v-else-if="!isEmpty(selectedShift)">
                           <span class="btn btn-ghost btn-sm btn-square" @click="handleAddEmployee(row)">
                             <UserAddIcon class="w-5 h-5" />
+                          </span>
+                        </div>
+
+                        <div class="tooltip tooltip-left" data-tip="Add Shift" v-else>
+                          <span class="btn btn-ghost btn-sm btn-square" @click="tab = 'shifts'">
+                            <CalendarIcon class="w-5 h-5" />
                           </span>
                         </div>
                       </div>
@@ -532,16 +675,35 @@ onMounted(() => {
       </Card>
     </div>
 
-    <div class="col-span-12 md:col-span-6" v-if="tab == 'employees' || tab == 'shifts'">
-      <Card title="List of Employees to Schedule">
+    <div class="col-span-12 md:col-span-6" v-if="(tab == 'employees' || tab == 'shifts') && !isEmpty(selectedShiftData)">
+      <Card
+        title=""
+      >
+        <!-- :title="`Shift ${ selectedShiftData.index + 1 }: ${formatTime(selectedShiftData.working_time_in)} - ${formatTime(selectedShiftData.working_time_out)} ` -->
 
-        <div class="flex justify-between flex-row-reverse pb-4">
+        <div role="tablist" class="tabs tabs-bordered">
+          <!-- <a role="tab" class="tab" :class="{'tab-active': tab == 'employees'}" @click="tab = 'employees'">Employees</a>
+          <a role="tab" class="tab" :class="{'tab-active': tab == 'shifts'}" @click="tab = 'shifts'">Shifts</a>
+          <a role="tab" class="tab" :class="{'tab-active': tab == 'dates'}" @click="tab = 'dates'">Dates</a> -->
+          <a role="tab" class="tab" v-for="(shift, index) in payload.shifts" :key="index" :class="{'tab-active': selectedShift == shift.uuid}" @click="selectedShift = shift.uuid">
+            <span>Shift {{ index + 1 }}</span>
+          </a>
+        </div>
+
+        <div class="flex justify-between flex-row-reverse pt-14 pb-6">
 
           <div class="flex join">
             <AutoComplete :options="employeeOptions" :search="searchEmployee" @select="handleOptionSelectEmployee" placeholder="Search for employee name"/>
             <button type="button" class="btn btn-sm join-item">
               <SearchIcon class="w-4 h-4" />
             </button>
+          </div>
+
+          <div class="flex join space-x-2 pt-2" v-if="!isEmpty(selectedShiftData)">
+            <span class="font-bold">Shift {{ selectedShiftData?.index + 1 }}:</span>
+            <span>
+              {{ formatTime(selectedShiftData.working_time_in) }} - {{ formatTime(selectedShiftData.working_time_out) }}
+            </span>
           </div>
 
         </div>
@@ -556,8 +718,9 @@ onMounted(() => {
                 <th class="text-center">Actions</th>
               </tr>
             </thead>
-            <tbody>
-              <tr v-for="row in payload.employees">
+            <tbody v-if="payload.shifts[selectedShiftData.index]">
+              <!-- <tr v-for="row in payload.employees"> -->
+              <tr v-for="row in payload.shifts[selectedShiftData.index].employees">
                 <td>{{ row.office?.name }}</td>
                 <td>{{ row.full_name }}</td>
                 <td>{{ row.position }}</td>
@@ -570,7 +733,14 @@ onMounted(() => {
                 </td>
               </tr>
             </tbody>
-            <tfoot v-if="payload.employees.length == 0">
+            <tfoot v-if="!isEmpty(selectedShiftData)">
+              <tr v-if="isEmpty(payload.shifts[selectedShiftData.index].employees)">
+                <th colspan="20" class="text-center">
+                  <p class="text-lg">No Data</p>
+                </th>
+              </tr>
+            </tfoot>
+            <tfoot v-else>
               <tr>
                 <th colspan="20" class="text-center">
                   <p class="text-lg">No Data</p>
