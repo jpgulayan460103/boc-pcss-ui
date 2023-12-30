@@ -6,6 +6,7 @@ const API = import.meta.env.VITE_API_URL;
 
 export const useScheduleStore = defineStore('schedule', () => {
   const schedules = ref([]);
+  const selectedShift = ref("");
   const selectedSchedule = ref({});
   const formType = ref("create");
 
@@ -60,6 +61,7 @@ export const useScheduleStore = defineStore('schedule', () => {
     schedules,
     selectedSchedule,
     formType,
+    selectedShift,
     save,
     download,
     get,

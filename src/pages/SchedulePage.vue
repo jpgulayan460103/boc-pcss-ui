@@ -48,7 +48,7 @@ const router = useRouter()
 const tab = ref("shifts");
 const formErrors = ref({});
 
-const { payload } = storeToRefs(scheduleStore);
+const { payload, selectedShift } = storeToRefs(scheduleStore);
 
 const handleUpdateRange = (value) => {
   if(value){
@@ -159,9 +159,6 @@ const getPayloadOffice = () => {
   return "";
 }
 
-const selectedShift = ref("");
-
-
 const selectedShiftData = computed(() => {
   const data = payload.value.shifts.find(i => i.uuid == selectedShift.value);
   if(data){
@@ -201,6 +198,14 @@ const handleAddShift = () => {
 }
 
 const showErrors = ref(false);
+
+const getErrorMessages = (index, error) => {
+  if(index.includes("shift.")){
+    return formErrors.value[index][0].label;
+  }else{
+    return error[0];
+  }
+}
 
 const handleRemoveShift = (index) => {
   if (index > -1) { // only splice array when item is found
@@ -502,9 +507,9 @@ onMounted(() => {
             <div class="pt-4" v-if="showErrors">
               <div role="alert" class="alert">
                 <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <div>
+                <div class="space-y-2">
                   <p class="font-bold">Generating schedule failed. Please review the form.</p>
-                  <p v-for="error in formErrors">{{ error[0] }}</p>
+                  <p v-for="(error, index) in formErrors" :key="index">{{ getErrorMessages(index, error) }}</p>
                 </div>
                 <div>
                   <button type="button" class="btn btn-sm btn-ghost" @click="showErrors = false">Close</button>
@@ -725,10 +730,20 @@ onMounted(() => {
                 <td>{{ row.full_name }}</td>
                 <td>{{ row.position }}</td>
                 <td class="text-center">
-                  <div class="tooltip tooltip-left" data-tip="Remove Employee">
-                    <span class="btn btn-ghost btn-sm btn-square text-secondary" @click="handleRemoveEmployee(row)">
-                      <UserMinusIcon class="w-5 h-5" />
-                    </span>
+                  <div class="join">
+
+                    <div class="tooltip tooltip-left" data-tip="Remove Employee">
+                      <span class="btn btn-ghost btn-sm btn-square text-secondary" @click="handleRemoveEmployee(row)">
+                        <UserMinusIcon class="w-5 h-5" />
+                      </span>
+                    </div>
+                    
+                    <!-- <div class="tooltip tooltip-left" data-tip="Remove Employee">
+                      <span class="btn btn-ghost btn-sm btn-square text-secondary" @click="handleRemoveEmployee(row)">
+                        <UserMinusIcon class="w-5 h-5" />
+                      </span>
+                    </div> -->
+
                   </div>
                 </td>
               </tr>
