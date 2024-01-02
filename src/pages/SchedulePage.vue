@@ -183,6 +183,7 @@ const handleAddShift = () => {
         working_time_in: "08:00:00",
         working_time_out: "17:00:00",
         employees: [],
+        positions: [],
       }
     ];
     selectedShift.value = uuid;
@@ -194,6 +195,7 @@ const handleAddShift = () => {
         working_time_in: "00:00:00",
         working_time_out: "00:00:00",
         employees: [],
+        positions: [],
       }
     ];
   }
@@ -202,19 +204,64 @@ const handleAddShift = () => {
 const selectedPosition = ref(null);
 
 const handleAddPosition = () => {
-  const postionExist = payload.value.positions.filter(i => i.value.id == selectedPosition.value);
-  if(isEmpty(postionExist)){
+  if(!isEmpty(selectedShiftData.value)){
+    
+    if(selectedPosition.value){
+      if(isEmpty(payload.value.shifts[selectedShiftData.value.index].positions)){
+        payload.value.shifts[selectedShiftData.value.index].positions = [
+          ...payload.value.shifts[selectedShiftData.value.index].positions,
+          {
+            uuid: uuidv4(),
+            employees: 0,
+            value: positionStore.positions.find(i => i.id == selectedPosition.value)
+          },
+        ]
 
-    payload.value.positions = [
-      ...payload.value.positions,
-      {
-        uuid: uuidv4(),
-        employees: 0,
-        value: positionStore.positions.find(i => i.id == selectedPosition.value)
+        selectedPosition.value = null;
+        
+        return false;
       }
-    ];
+
+      const filteredEmployee = payload.value.shifts[selectedShiftData.value.index].positions.filter(i => i.value.id == selectedPosition.value);
+      if(filteredEmployee.length == 0){
+        payload.value.shifts[selectedShiftData.value.index].positions = [
+          ...payload.value.shifts[selectedShiftData.value.index].positions,
+          {
+            uuid: uuidv4(),
+            employees: 0,
+            value: positionStore.positions.find(i => i.id == selectedPosition.value)
+          },
+        ]
+
+        selectedPosition.value = null;
+      }
+    }
   }
 
+  
+  // const filteredPosition = payload.value.positions.filter(i => i.value.id == selectedPosition.value);
+  // if(isEmpty(filteredPosition)){
+
+  //   payload.value.positions = [
+  //     ...payload.value.positions,
+  //     {
+  //       uuid: uuidv4(),
+  //       employees: 0,
+  //       value: positionStore.positions.find(i => i.id == selectedPosition.value)
+  //     }
+  //   ];
+
+  //   selectedPosition.value = null;
+  // }
+}
+
+const handleRemovePosition = (position) => {
+  // payload.value.positions = payload.value.positions.filter(i => i.uuid != position.uuid);
+
+  if(!isEmpty(selectedShiftData.value)){
+
+    payload.value.shifts[selectedShiftData.value.index].positions = payload.value.shifts[selectedShiftData.value.index].positions.filter(i => i.uuid != position.uuid);
+  }
 }
 
 const showErrors = ref(false);
@@ -466,6 +513,15 @@ const getSummaryEmployee = (employees) => {
   }));
 }
 
+const getTotalEmployee = (shift) => {
+  const initialValue = 0;
+
+  return shift.positions.reduce(
+    (accumulator, currentValue) => accumulator + currentValue.employees,
+    initialValue,
+  )
+}
+
 const getMainCardTitle = computed(() => {
   return '';
   //     <Card :title="tab == 'dates' ? 'Set Working Dates' :  (tab == 'employees' ? 'Set Employees' : 'Set Work Shifts')">
@@ -518,10 +574,15 @@ onMounted(() => {
               <p class="text-sm pl-4" v-for="(shift, index) in payload.shifts">
                 <span class="font-bold">Shift {{ index +1 }}: </span>
                 <span>{{ formatTime(shift.working_time_in) }} - {{ formatTime(shift.working_time_out) }}</span> <br>
-                <span class="pl-4 font-bold">Employees: </span> <span>{{ shift.employees.length }}</span><br>
-                <span class="pl-4" v-for="employee in getSummaryEmployee(shift.employees)">
+                <span class="pl-4 font-bold">Employees: </span> <span>{{ getTotalEmployee(shift) }}</span><br>
+                <!-- <span class="pl-4" v-for="employee in getSummaryEmployee(shift.employees)">
                   <span class="font-bold">{{ employee.label }}: </span>
                   <span>{{ employee.total }}</span>
+                  <br>
+                </span> -->
+                <span class="pl-4" v-for="position in shift.positions">
+                  <span class="font-bold">{{ position.value.name }}: </span>
+                  <span>{{ position.employees }}</span>
                   <br>
                 </span>
               </p>
@@ -567,11 +628,20 @@ onMounted(() => {
               Add Position
             </button>
 
-            <div class="col-span-12" v-for="(position, index) in payload.positions">
-              <FormInput :label="`How many ${position.value.name}?`" :errors="formErrors?.office_id" :right-label="`${position.value.employees_count} max`">
-                <input type="number" :max="position.value.employees_count" v-model="position.employees" placeholder="" class="input input-bordered w-full" />
-              </FormInput>
+            <div class="grid grid-cols-12" v-for="(position, index) in payload.positions">
+
+              <div class="col-span-9">
+                <FormInput :label="`How many ${position.value.name}?`" :errors="formErrors?.office_id" :right-label="`${position.value.employees_count} max`">
+                  <input type="number" :max="position.value.employees_count" v-model="position.employees" placeholder="" class="input input-bordered w-full" />
+                </FormInput>
+              </div>
+              <div class="col-span-3 my-auto pt-8">
+                <button type="button" class="btn btn-secondary w-full" @click="handleRemovePosition(position)">
+                  <DeleteIcon class="w-5 h-5" /> Remove
+                </button>
+              </div>
             </div>
+
           </div>
 
 
@@ -727,6 +797,50 @@ onMounted(() => {
             </tfoot>
           </table>
         </div>
+      </Card>
+    </div>
+
+    <div class="col-span-12 md:col-span-6" v-if="tab == 'shifts' && !isEmpty(selectedShiftData)">
+      <Card title="" >
+
+        <div role="tablist" class="tabs tabs-bordered pb-6">
+          <a role="tab" class="tab" v-for="(shift, index) in payload.shifts" :key="index" :class="{'tab-active': selectedShift == shift.uuid}" @click="selectedShift = shift.uuid">
+            <span>Shift {{ index + 1 }}</span>
+          </a>
+        </div>
+
+
+        
+        <div class="grid grid-cols-12 mb-4">
+
+          <div class="col-span-9">
+            <FormInput label="Position" :errors="formErrors?.office_id">
+              <ComboBox v-model="selectedPosition" :options="positionOptions" class="join-item" />
+            </FormInput>
+          </div>
+          <div class="col-span-3 my-auto pt-8">
+            <button type="button" class="btn btn-primary btn-sm w-full join-item" @click="handleAddPosition">
+              <PlusIcon class="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+        
+
+        <div class="grid grid-cols-12" v-if="payload.shifts[selectedShiftData.index]" v-for="(position, index) in payload.shifts[selectedShiftData.index].positions">
+
+          <div class="col-span-9">
+            <FormInput :label="`How many ${position.value.name}?`" :errors="formErrors?.office_id" :right-label="`${position.value.employees_count} max`">
+              <input type="number" :max="position.value.employees_count" v-model="position.employees" placeholder="" class="input input-bordered w-full" />
+            </FormInput>
+          </div>
+          <div class="col-span-3 my-auto pt-8">
+            <button type="button" class="btn btn-secondary w-full" @click="handleRemovePosition(position)">
+              <DeleteIcon class="w-5 h-5" /> Remove
+            </button>
+          </div>
+        </div>
+
+
       </Card>
     </div>
 
