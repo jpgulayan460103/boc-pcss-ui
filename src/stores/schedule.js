@@ -16,7 +16,8 @@ export const useScheduleStore = defineStore('schedule', () => {
       end: null,
     },
     shifts: [],
-    employees: []
+    employees: [],
+    positions: [],
   });
 
   const get = async () => {

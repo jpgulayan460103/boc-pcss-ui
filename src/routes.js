@@ -5,6 +5,7 @@ import LoginPage from '@/pages/LoginPage.vue'
 import EmployeePage from '@/pages/EmployeePage.vue'
 import SchedulePage from '@/pages/SchedulePage.vue'
 import OfficePage from '@/pages/OfficePage.vue'
+import PositionPage from '@/pages/PositionPage.vue'
 import { vueApp } from '@/app.js'
 import { useAuthStore } from '@/stores/auth.js'
 
@@ -39,6 +40,17 @@ const routes = [
     component: OfficePage,
     meta: {
       label: 'Offices',
+      hasNavBar: true,
+      auth: true,
+      isAdminPage: true,
+    },
+  },
+  {
+    path: '/positions',
+    name: 'positions',
+    component: PositionPage,
+    meta: {
+      label: 'Positions',
       hasNavBar: true,
       auth: true,
       isAdminPage: true,

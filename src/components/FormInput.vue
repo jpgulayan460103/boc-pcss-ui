@@ -3,6 +3,10 @@ defineProps({
   label: {
     type: String,
   },
+  rightLabel: {
+    type: String,
+    default: "",
+  },
   help: {
     type: String,
   },
@@ -26,6 +30,7 @@ defineProps({
       <span v-if="label">{{ label }}</span>
       <span v-else>&nbsp;</span>
     </span>
+    <span class="label-text-alt">{{ rightLabel }}</span>
   </label>
   <slot />
   <label class="label" v-if="help">

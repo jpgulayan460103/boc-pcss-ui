@@ -57,6 +57,12 @@ const routeName = computed(() => route.name )
           <span v-if="showLabels">Offices</span>
         </a>
       </li>
+      <li v-if="authStore.authUser.role == 'admin'">
+        <a href="#" class="p-2 rounded-box" @click="router.push({name: 'positions'})" :class="{ 'active': routeName == 'positions' }">
+          <WalletIcon class="w-5 h-5" />
+          <span v-if="showLabels">Positions</span>
+        </a>
+      </li>
     </ul>
   </div>
 
@@ -93,6 +99,12 @@ const routeName = computed(() => route.name )
         <a href="#" class="p-2 rounded-box" @click="router.push({name: 'offices'})" :class="{ 'active': routeName == 'offices' }">
           <WalletIcon class="w-5 h-5" />
           Offices
+        </a>
+      </li>
+      <li v-if="authStore.authUser.role == 'admin'">
+        <a href="#" class="p-2 rounded-box" @click="router.push({name: 'positions'})" :class="{ 'active': routeName == 'positions' }">
+          <WalletIcon class="w-5 h-5" />
+          Positions
         </a>
       </li>
     </ul>

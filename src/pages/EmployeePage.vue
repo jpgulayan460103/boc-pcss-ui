@@ -18,18 +18,27 @@ import Pagination from '@/components/Pagination.vue';
 import ChevronUpDownIcon from '@/icons/ChevronUpDownIcon.vue';
 import ChevronIcon from '@/icons/ChevronIcon.vue';
 import TableHeader from '@/components/TableHeader.vue';
+import { usePositionStore } from '@/stores/position';
 
 
 const themeStore = useThemeStore()
 const employeeStore = useEmployeeStore();
 const officeStore = useOfficeStore();
+const positionStore = usePositionStore();
 const authStore = useAuthStore()
 
 const searchQuery = ref("");
 
 const payload = ref({});
 
-const options = computed(() => officeStore.offices.map(i => {
+const emplopyeeOptions = computed(() => officeStore.offices.map(i => {
+  return {
+    value: i.id,
+    label: i.name,
+  }
+}))
+
+const positionOptions = computed(() => positionStore.positions.map(i => {
   return {
     value: i.id,
     label: i.name,
@@ -129,6 +138,7 @@ onMounted(async () => {
   employeeStore.get();
   employeeStore.unSelect();
   officeStore.get();
+  positionStore.get();
 })
 
 </script>
@@ -159,15 +169,16 @@ onMounted(async () => {
               </FormInput>
             </div>
 
+
             <div class="col-span-12">
-              <FormInput label="Position" :errors="formErrors?.position">
-                <input type="text" v-model="payload.position" placeholder="" class="input input-bordered w-full" />
+              <FormInput label="Position" :errors="formErrors?.position_id">
+                <ComboBox v-model="payload.position_id" :options="positionOptions" />
               </FormInput>
             </div>
 
             <div class="col-span-12" v-if="authStore.authUser.role == 'admin'">
               <FormInput label="Assigned Office" :errors="formErrors?.office_id">
-                <ComboBox v-model="payload.office_id" :options="options" />
+                <ComboBox v-model="payload.office_id" :options="emplopyeeOptions" />
               </FormInput>
             </div>
 
@@ -234,7 +245,7 @@ onMounted(async () => {
               <tr v-for="row in employeeStore.employees">
                 <td>{{ row.office?.name }}</td>
                 <td>{{ row.full_name }}</td>
-                <td>{{ row.position }}</td>
+                <td>{{ row.position?.name }}</td>
                 <td>{{ row.is_overtimer ? 'Overtimer' : 'Regular' }}</td>
                 <td class="text-center">
                   <div class="join">

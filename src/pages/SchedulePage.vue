@@ -31,6 +31,7 @@ import { storeToRefs } from 'pinia';
 import Pagination from '@/components/Pagination.vue';
 import AutoComplete from '@/components/AutoComplete.vue';
 import TableHeader from '@/components/TableHeader.vue';
+import { usePositionStore } from '@/stores/position';
 
 const { mapCurrent } = useScreens({ xs: '0px', sm: '640px', md: '768px', lg: '1024px' });
 const columns = mapCurrent({ lg: 2 }, 1);
@@ -38,6 +39,7 @@ const columns = mapCurrent({ lg: 2 }, 1);
 const themeStore = useThemeStore()
 const userStore = useUserStore();
 const officeStore = useOfficeStore();
+const positionStore = usePositionStore();
 const scheduleStore = useScheduleStore();
 const employeeStore = useEmployeeStore();
 const holidayStore = useHolidayStore()
@@ -195,6 +197,24 @@ const handleAddShift = () => {
       }
     ];
   }
+}
+
+const selectedPosition = ref(null);
+
+const handleAddPosition = () => {
+  const postionExist = payload.value.positions.filter(i => i.value.id == selectedPosition.value);
+  if(isEmpty(postionExist)){
+
+    payload.value.positions = [
+      ...payload.value.positions,
+      {
+        uuid: uuidv4(),
+        employees: 0,
+        value: positionStore.positions.find(i => i.id == selectedPosition.value)
+      }
+    ];
+  }
+
 }
 
 const showErrors = ref(false);
@@ -391,6 +411,13 @@ const officeOptions = computed(() => officeStore.offices.map(i => {
   }
 }))
 
+const positionOptions = computed(() => positionStore.positions.map(i => {
+  return {
+    value: i.id,
+    label: i.name,
+  }
+}))
+
 watch(
   () => authStore.authUser.role,
   (value) => {
@@ -461,6 +488,7 @@ onMounted(() => {
   employeeStore.get();
   officeStore.get();
   holidayStore.get();
+  positionStore.get();
 })
 
 
@@ -473,8 +501,9 @@ onMounted(() => {
       <Card :title="getMainCardTitle">
         <div role="tablist" class="tabs tabs-bordered">
           <a role="tab" class="tab" :class="{'tab-active': tab == 'shifts'}" @click="tab = 'shifts'">Shifts</a>
-          <a role="tab" class="tab" :class="{'tab-active': tab == 'employees'}" @click="tab = 'employees'">Employees</a>
+          <!-- <a role="tab" class="tab" :class="{'tab-active': tab == 'employees'}" @click="tab = 'employees'">Employees</a> -->
           <a role="tab" class="tab" :class="{'tab-active': tab == 'dates'}" @click="tab = 'dates'">Dates</a>
+          <a role="tab" class="tab" :class="{'tab-active': tab == 'settings'}" @click="tab = 'settings'">Inputs</a>
           <a role="tab" class="tab" :class="{'tab-active': tab == 'summary'}" @click="tab = 'summary'">Summary</a>
         </div>
 
@@ -524,6 +553,27 @@ onMounted(() => {
             </div>
 
           </div>
+
+          <div v-if="tab == 'settings'" class="pt-6 space-y-4">
+
+            <div class="col-span-12">
+              <FormInput label="Position" :errors="formErrors?.office_id">
+                <ComboBox v-model="selectedPosition" :options="positionOptions" />
+              </FormInput>
+            </div>
+
+            <button type="button" class="btn btn-primary btn-sm join-item" @click="handleAddPosition">
+              <PlusIcon class="w-5 h-5" />
+              Add Position
+            </button>
+
+            <div class="col-span-12" v-for="(position, index) in payload.positions">
+              <FormInput :label="`How many ${position.value.name}?`" :errors="formErrors?.office_id" :right-label="`${position.value.employees_count} max`">
+                <input type="number" :max="position.value.employees_count" v-model="position.employees" placeholder="" class="input input-bordered w-full" />
+              </FormInput>
+            </div>
+          </div>
+
 
           <div v-if="tab == 'shifts'" class="pt-6 space-y-4">
 
@@ -680,7 +730,7 @@ onMounted(() => {
       </Card>
     </div>
 
-    <div class="col-span-12 md:col-span-6" v-if="(tab == 'employees' || tab == 'shifts') && !isEmpty(selectedShiftData)">
+    <div class="col-span-12 md:col-span-6" v-if="(tab == 'employees' || tab == 'shifts1') && !isEmpty(selectedShiftData)">
       <Card
         title=""
       >
