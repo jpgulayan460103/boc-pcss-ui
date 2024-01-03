@@ -52,12 +52,13 @@ const handleDeleteSchedule = (schedule) => {
 }
 
 const handleDownloadSchedule = (schedule) => {
-  submit.value = true
-  scheduleStore.download(schedule)
-    .then(res => {
-      submit.value = false
-      window.location = `${API}/${res.data.url}`
-    })
+  window.location = `${API}/api/schedules/${schedule.id}/pdf`
+  // submit.value = true
+  // scheduleStore.download(schedule)
+  //   .then(res => {
+  //     submit.value = false
+  //     window.location = `${API}/${res.data.url}`
+  //   })
 }
 
 const { mapCurrent } = useScreens({ xs: '0px', sm: '640px', md: '768px', lg: '1024px' });
@@ -264,7 +265,7 @@ watch(
                   </td>
                   <td>
                     <div class="join">
-                      <div class="tooltip tooltip-left" data-tip="Download CSV">
+                      <div class="tooltip tooltip-left" data-tip="Download PDF">
                         <button class="btn btn-ghost btn-sm btn-square" @click="handleDownloadSchedule(row)" :disabled="submit">
                           <span class="loading loading-spinner loading-xs" v-if="submit"></span>
                           <DownloadIcon class="w-5 h-5" v-else />

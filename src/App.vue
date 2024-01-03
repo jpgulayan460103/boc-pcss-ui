@@ -44,7 +44,7 @@ onMounted(async () => {
     <MenuBar v-if="route.meta.hasNavBar" />
     <ChangePassword v-if="route.meta.hasNavBar" />
     
-    <div class="flex bg-base-300 min-h-screen p-4">
+    <div class="flex bg-base-300 min-h-screen p-6">
       <router-view v-slot="{ Component }">
           <transition
             enter-active-class="transition duration-300"

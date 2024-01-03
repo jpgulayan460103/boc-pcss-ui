@@ -11,9 +11,9 @@ defineProps({
 })
 
 const handleCloseButton = () => {
-  emit('onClose', true);
+  emit('close', true);
 }
-const emit = defineEmits(['onClose'])
+const emit = defineEmits(['close'])
 </script>
 
 <template>

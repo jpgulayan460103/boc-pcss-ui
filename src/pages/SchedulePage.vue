@@ -1,4 +1,5 @@
 <script setup>
+const API = import.meta.env.VITE_API_URL;
 import Card from '@/components/Card.vue'
 import ComboBox from '@/components/ComboBox.vue'
 import FormInput from '@/components/FormInput.vue'
@@ -203,6 +204,15 @@ const handleAddShift = () => {
 
 const selectedPosition = ref(null);
 
+watch(
+  selectedPosition,
+  (value) => {
+    if(value){
+      handleAddPosition();
+    }
+  }
+)
+
 const handleAddPosition = () => {
   if(!isEmpty(selectedShiftData.value)){
     
@@ -235,6 +245,7 @@ const handleAddPosition = () => {
 
         selectedPosition.value = null;
       }
+      selectedPosition.value = null;
     }
   }
 
@@ -253,6 +264,10 @@ const handleAddPosition = () => {
 
   //   selectedPosition.value = null;
   // }
+}
+
+const getShiftPostionError = (shiftKey, positionKey) => {
+  return formErrors.value[`shifts.${shiftKey}.positions.${positionKey}`];
 }
 
 const handleRemovePosition = (position) => {
@@ -419,6 +434,10 @@ const handleAddEmployeeUsingOffice = async () => {
   }
 }
 
+const showGeneratedSchedule = ref(false);
+
+const generatedSchedule = ref({});
+
 const submitScheduleForm = async () => {
   submit.value = true;
   showErrors.value = false;
@@ -441,6 +460,8 @@ const submitScheduleForm = async () => {
       shifts: [],
       employees: []
     }
+    generatedSchedule.value = res.data;
+    showGeneratedSchedule.value = true;
   })
   .catch(err => {
     submit.value = false;
@@ -558,8 +579,8 @@ onMounted(() => {
         <div role="tablist" class="tabs tabs-bordered">
           <a role="tab" class="tab" :class="{'tab-active': tab == 'shifts'}" @click="tab = 'shifts'">Shifts</a>
           <!-- <a role="tab" class="tab" :class="{'tab-active': tab == 'employees'}" @click="tab = 'employees'">Employees</a> -->
+          <a role="tab" class="tab" :class="{'tab-active': tab == 'settings'}" @click="tab = 'settings'"  v-if="payload.shifts.length != 0">Shift Composition</a>
           <a role="tab" class="tab" :class="{'tab-active': tab == 'dates'}" @click="tab = 'dates'">Dates</a>
-          <a role="tab" class="tab" :class="{'tab-active': tab == 'settings'}" @click="tab = 'settings'">Inputs</a>
           <a role="tab" class="tab" :class="{'tab-active': tab == 'summary'}" @click="tab = 'summary'">Summary</a>
         </div>
 
@@ -617,21 +638,32 @@ onMounted(() => {
 
           <div v-if="tab == 'settings'" class="pt-6 space-y-4">
 
+            <div role="tablist" class="tabs tabs-bordered pb-6" v-if="payload.shifts.length > 1">
+              <a role="tab" class="tab" v-for="(shift, index) in payload.shifts" :key="index" :class="{'tab-active': selectedShift == shift.uuid}" @click="selectedShift = shift.uuid">
+                <span>Shift {{ index + 1 }}</span>
+              </a>
+            </div>
+
+
             <div class="col-span-12">
-              <FormInput label="Position" :errors="formErrors?.office_id">
-                <ComboBox v-model="selectedPosition" :options="positionOptions" />
+              <FormInput label="Add Shift Composition" :errors="formErrors?.office_id">
+                <ComboBox v-model="selectedPosition" :options="positionOptions" class="join-item" />
               </FormInput>
             </div>
 
-            <button type="button" class="btn btn-primary btn-sm join-item" @click="handleAddPosition">
+            <!-- <button type="button" class="btn btn-primary btn-sm join-item" @click="handleAddPosition">
               <PlusIcon class="w-5 h-5" />
               Add Position
-            </button>
+            </button> -->
 
-            <div class="grid grid-cols-12" v-for="(position, index) in payload.positions">
+            <div class="grid grid-cols-12" v-if="payload.shifts[selectedShiftData.index]" v-for="(position, positionIndex) in payload.shifts[selectedShiftData.index].positions">
 
               <div class="col-span-9">
-                <FormInput :label="`How many ${position.value.name}?`" :errors="formErrors?.office_id" :right-label="`${position.value.employees_count} max`">
+                <FormInput
+                  :label="`How many ${position.value.name}?`"
+                  :right-label="`${position.value.employees_count} max`"
+                  :errors="getShiftPostionError(selectedShiftData.index, positionIndex)"
+                >
                   <input type="number" :max="position.value.employees_count" v-model="position.employees" placeholder="" class="input input-bordered w-full" />
                 </FormInput>
               </div>
@@ -800,7 +832,7 @@ onMounted(() => {
       </Card>
     </div>
 
-    <div class="col-span-12 md:col-span-6" v-if="tab == 'shifts' && !isEmpty(selectedShiftData)">
+    <!-- <div class="col-span-12 md:col-span-6" v-if="tab == 'shifts' && !isEmpty(selectedShiftData)">
       <Card title="" >
 
         <div role="tablist" class="tabs tabs-bordered pb-6">
@@ -842,8 +874,15 @@ onMounted(() => {
 
 
       </Card>
-    </div>
+    </div> -->
 
+    <div class="col-span-12 md:col-span-6" v-if="tab == 'summary' && showGeneratedSchedule">
+      <Card title="Generated Schedule" closable @close="showGeneratedSchedule = false">
+        <div class="w-full h-[70vh]">
+          <iframe :src="`${API}/api/schedules/${generatedSchedule.id}/pdf?view=1`" class="w-full h-full" title="Iframe Example"></iframe>
+        </div>
+      </Card>
+    </div>
     <div class="col-span-12 md:col-span-6" v-if="(tab == 'employees' || tab == 'shifts1') && !isEmpty(selectedShiftData)">
       <Card
         title=""

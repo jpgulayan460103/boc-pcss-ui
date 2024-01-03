@@ -326,7 +326,7 @@ onMounted(async () => {
     </div>
 
     <div class="col-span-12 md:col-span-8" v-else>
-      <Card title="Work Schedules" closable @on-close="userStore.unSelect()">
+      <Card title="Work Schedules" closable @close="userStore.unSelect()">
         <div class="flex justify-between">
           <button class="btn btn-primary btn-sm join-item" @click="handleAddSchedule">
             <PlusIcon class="w-5 h-5" />
