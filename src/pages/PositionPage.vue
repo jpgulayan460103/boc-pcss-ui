@@ -72,7 +72,7 @@ const handleSearchRecord = debounce(() => {
 }, 500)
 
 const handleDeletePosition = (schedule) => {
-  if(confirm('Are you sure you want to delete this user')){
+  if(confirm('Are you sure you want to delete this position?')){
     positionStore.destroy(schedule)
     .then(res => {
       positionStore.get();
@@ -103,7 +103,7 @@ onMounted(async () => {
   <div class="container mx-auto grid grid-cols-12 gap-2">
 
     <div class="col-span-12 md:col-span-4">
-      <Card title="Position Form">
+      <Card title="Create Position/Designation">
         <form @submit.prevent="submitPositionForm">
           <div class="grid grid-cols-12">
 
@@ -134,7 +134,7 @@ onMounted(async () => {
     </div>
 
     <div class="col-span-12 md:col-span-8">
-      <Card title="List of Positions">
+      <Card title="List of Positions/Designations">
 
         <div class="flex justify-between flex-row-reverse">
           <div class="flex join py-4">

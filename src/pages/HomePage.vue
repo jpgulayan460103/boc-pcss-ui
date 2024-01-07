@@ -213,14 +213,14 @@ watch(
                 <span class="font-bold">{{ dayjs(day.date).format('ddd, MMM D, YYYY') }}</span>
                 <div class="flex justify-between space-x-1.5 mb-2" v-for="attribute in attributes">
                   <div class="grow" v-if="attribute.labelType == 'schedule'">
-                    <div class="vc-dots" style="justify-content: initial;">
+                    <div class="vc-dots" style="justify-content: initial;" v-for="office in attribute.schedule.offices">
                       <span :class="`vc-dot vc-${attribute.color} vc-attr`" style="width: 8px; height: 6px;"></span>
-                      <span class="font-bold">{{ attribute.schedule.office.name }}</span>
+                      <span class="font-bold">{{ office.office?.name }}</span>
                     </div>
-                    <span v-for="shifts in attribute.schedule.shifts">
+                    <!-- <span v-for="shifts in attribute.schedule.shifts">
                       {{ formatTime(shifts.working_time_in) }} - {{ formatTime(shifts.working_time_out) }}
                       <br>
-                    </span>
+                    </span> -->
                   </div>
                   <div class="grow" v-else>
                     <div class="vc-dots" style="justify-content: initial;">
@@ -249,20 +249,25 @@ watch(
                 <tr>
                   <th>Office</th>
                   <th>Schedule Date</th>
-                  <th>Shifts</th>
+                  <!-- <th>Shifts</th> -->
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="row in scheduleStore.schedules" :key="row.id">
-                  <td>{{ row.office?.name }}</td>
-                  <td>{{ formatDate(row.working_start_date) }} <br> {{ formatDate(row.working_end_date) }}</td>
                   <td>
+                    <span v-for="office in row.offices">
+                      {{ office.office.name }}
+                      <br>
+                    </span>
+                  </td>
+                  <td>{{ formatDate(row.working_start_date) }} <br> {{ formatDate(row.working_end_date) }}</td>
+                  <!-- <td>
                     <span v-for="shifts in row.shifts">
                       {{ formatTime(shifts.working_time_in) }} - {{ formatTime(shifts.working_time_out) }}
                       <br>
                     </span>
-                  </td>
+                  </td> -->
                   <td>
                     <div class="join">
                       <div class="tooltip tooltip-left" data-tip="Download PDF">

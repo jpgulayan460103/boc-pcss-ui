@@ -72,7 +72,7 @@ const handleSearchRecord = debounce(() => {
 }, 500)
 
 const handleDeleteOffice = (schedule) => {
-  if(confirm('Are you sure you want to delete this user')){
+  if(confirm('Are you sure you want to delete this office?')){
     officeStore.destroy(schedule)
     .then(res => {
       officeStore.get();
@@ -103,7 +103,7 @@ onMounted(async () => {
   <div class="container mx-auto grid grid-cols-12 gap-2">
 
     <div class="col-span-12 md:col-span-4">
-      <Card title="Office Form">
+      <Card title="Create Office">
         <form @submit.prevent="submitOfficeForm">
           <div class="grid grid-cols-12">
 

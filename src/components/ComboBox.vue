@@ -81,7 +81,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import {
   Combobox,
   ComboboxInput,
@@ -108,9 +108,7 @@ const handleInputBoxFocusOut = async () => {
   inputBoxInFocus.value = false
 }
 
-
-
-const emits = defineEmits(['update:modelValue', 'blur'])
+const emits = defineEmits(['update:modelValue', 'blur', 'change'])
 
 const props = defineProps({
   modelValue: {
@@ -129,5 +127,9 @@ const props = defineProps({
     type: String,
     default: '',
   },
+})
+
+watch(() => props.modelValue, (newValue) => {
+  emits('change', newValue);
 })
 </script>

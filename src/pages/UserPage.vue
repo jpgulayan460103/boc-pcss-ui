@@ -157,7 +157,7 @@ const handleSearchRecord = debounce(() => {
 }, 500)
 
 const handleDeleteUser = (schedule) => {
-  if(confirm('Are you sure you want to delete this user')){
+  if(confirm('Are you sure you want to delete this user?')){
     userStore.destroy(schedule)
     .then(res => {
       userStore.get();

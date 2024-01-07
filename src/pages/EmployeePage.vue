@@ -89,7 +89,7 @@ const handleSearchRecord = debounce(() => {
 }, 500)
 
 const handleDeleteEmployee = (schedule) => {
-  if(confirm('Are you sure you want to delete this user')){
+  if(confirm('Are you sure you want to delete this employee?')){
     employeeStore.destroy(schedule)
     .then(res => {
       employeeStore.get();
