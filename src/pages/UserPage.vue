@@ -179,7 +179,7 @@ onMounted(async () => {
   <div class="container mx-auto grid grid-cols-12 gap-2">
 
     <div class="col-span-12 md:col-span-4">
-      <Card title="User Form">
+      <Card title="User Form" class="min-h-full">
         <form @submit.prevent="submitUserForm">
           <div class="grid grid-cols-12">
 
@@ -266,7 +266,7 @@ onMounted(async () => {
     </div>
 
     <div class="col-span-12 md:col-span-8" v-if="userStore.formType != 'schedule'">
-      <Card title="List of Users">
+      <Card title="List of Users" class="min-h-full">
 
         <div class="flex justify-between flex-row-reverse">
           <div class="flex join py-4">
@@ -326,7 +326,7 @@ onMounted(async () => {
     </div>
 
     <div class="col-span-12 md:col-span-8" v-else>
-      <Card title="Work Schedules" closable @close="userStore.unSelect()">
+      <Card title="Work Schedules" closable @close="userStore.unSelect()" class="min-h-full">
         <div class="flex justify-between">
           <button class="btn btn-primary btn-sm join-item" @click="handleAddSchedule">
             <PlusIcon class="w-5 h-5" />

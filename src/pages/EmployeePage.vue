@@ -147,7 +147,7 @@ onMounted(async () => {
   <div class="container mx-auto grid grid-cols-12 gap-2">
 
     <div class="col-span-12 md:col-span-4">
-      <Card title="Employee Form">
+      <Card title="Employee Form" class="min-h-full">
         <form @submit.prevent="submitEmployeeForm">
           <div class="grid grid-cols-12">
 
@@ -219,7 +219,7 @@ onMounted(async () => {
     </div>
 
     <div class="col-span-12 md:col-span-8">
-      <Card title="List of Employees">
+      <Card title="List of Employees" class="min-h-full">
 
         <div class="flex justify-between flex-row-reverse">
           <div class="flex join py-4">

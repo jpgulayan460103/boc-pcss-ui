@@ -205,7 +205,7 @@ watch(
 <template>
   <div class="container mx-auto grid grid-cols-12 gap-2">
     <div class="col-span-12 md:col-span-6">
-      <Card title="Work Schedule Calendar">
+      <Card title="Work Schedule Calendar" class="min-h-full">
         <div class="overflow-auto w-full pt-4">
           <VCalendar expanded :columns="columns" :rows="3" :attributes="attrs" :is-dark="themeStore.calendar.isDark" :color="themeStore.calendar.color" @dayfocusin="handleSelectDate">
             <template #day-popover="{ attributes, day }">
@@ -236,7 +236,7 @@ watch(
       </Card>
     </div>
     <div class="col-span-12 md:col-span-6">
-      <Card title="List of Work Schedules">
+      <Card title="List of Work Schedules" class="min-h-full">
         <div role="tablist" class="tabs tabs-bordered">
           <a role="tab" class="tab" :class="{'tab-active': tab == 'schedules'}" @click="tab = 'schedules'">Schedules</a>
           <a role="tab" class="tab" :class="{'tab-active': tab == 'holidays'}" @click="tab = 'holidays'">Holidays</a>

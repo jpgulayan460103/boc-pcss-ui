@@ -567,7 +567,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container mx-auto grid grid-cols-12 gap-4">
+  <div class="container mx-auto grid grid-cols-12 gap-2">
 
     <div class="col-span-12 md:col-span-6">
       <Card :title="getMainCardTitle" class="min-h-full">
@@ -575,7 +575,7 @@ onMounted(() => {
           <a role="tab" class="tab" :class="{'tab-active': tab == 'offices'}" @click="tab = 'offices'">Offices</a>
           <a role="tab" class="tab" :class="{'tab-active': tab == 'settings'}" @click="tab = 'settings'"  v-if="payload.shifts.length != 0">Shift Composition</a>
           <a role="tab" class="tab" :class="{'tab-active': tab == 'dates'}" @click="tab = 'dates'">Dates</a>
-          <a role="tab" class="tab" :class="{'tab-active': tab == 'summary'}" @click="tab = 'summary'">Summary</a>
+        <a role="tab" class="tab" :class="{'tab-active': tab == 'summary'}" @click="tab = 'summary'">Summary</a>
         </div>
 
         <form @submit.prevent="submitScheduleForm">
@@ -711,7 +711,7 @@ onMounted(() => {
 
 
     <div class="col-span-12 md:col-span-6" v-if="tab == 'offices' && payload.offices[selectedOfficeData.index]"  v-for="(shift, shiftIndex) in payload.offices[selectedOfficeData.index].shifts">
-      <Card :title="`${selectedOfficeData.value.name} Shift ${(shiftIndex + 1)} Composition`"  class="min-h-full">
+      <Card :title="`${selectedOfficeData.value.name} Shift ${(shiftIndex + 1)} Composition`" class="min-h-full">
         <div class="pt-6 col-span-12">
 
             <div class="col-span-12">
@@ -728,7 +728,6 @@ onMounted(() => {
               <div class="col-span-12">
                 <FormInput
                   :label="`How many ${position.value?.name}?`"
-                  :right-label="`${position.value?.employees_count} max`"
                   :errors="getShiftPostionEmployeesError(shiftIndex, positionIndex)"
                 >
                   <div class="join w-full">
